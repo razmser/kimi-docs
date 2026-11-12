@@ -13,7 +13,7 @@ The Kimi API constrains the output format of chat completions via the `response_
 | **JSON Mode** | `json_object` | Guarantees a valid JSON Object, but does not constrain specific fields | Simple JSON output, flexible-field scenarios |
 | **Structured Output** | `json_schema` | Precisely defines field names, types, and nested structure via JSON Schema | Scenarios requiring strict structure and downstream-system integration |
 
-This document focuses on the **`json_schema` mode of `response_format` (i.e., Structured Output)**, including parameter usage, model differences, common issues, and error handling. For the basics of JSON Mode, see [JSON Mode](use-json-mode-feature-of-kimi-api.md).
+This document focuses on the **`json_schema` mode of `response_format` (i.e., Structured Output)**, including parameter usage, common issues, and error handling. For the basics of JSON Mode, see [JSON Mode](use-json-mode-feature-of-kimi-api.md).
 
 ## response\_format basic structure
 
@@ -39,11 +39,7 @@ Compared to JSON Mode, Structured Output offers the following advantages:
 * **No need to repeatedly describe the format in the prompt**: Decouple format requirements from the schema, reducing prompt-engineering complexity.
 * **More reliable downstream integration**: Output can be directly parsed by `json.loads` into strongly-typed objects without extra fault-tolerance handling.
 
-> **Model-difference note**: Different models have different levels of JSON Schema support.
->
-> * `kimi-k3.1-pro` and `kimi-k3` reliably support Structured Output, including nested objects, arrays, and `anyOf`.
-> * `kimi-k2.7-code` has the most stable Structured Output support, including nested objects, arrays, `anyOf` / `oneOf` / `$ref` / `additionalProperties: true`, etc.
-> * `kimi-k2.6` occasionally behaves unstably with complex schemas; for example, `$ref` may return a Markdown code block, `oneOf` may be ignored, and `partial=true` may output fields outside the schema. When using `kimi-k2.6`, prefer simple schemas and add a second validation layer in your business logic.
+> **Current models**: `kimi-k3.1-pro` and `kimi-k3` reliably support Structured Output, including nested objects, arrays, `anyOf` / `oneOf` / `$ref` / `additionalProperties: true`.
 
 ## Quick start
 
@@ -116,7 +112,7 @@ print(result["keywords"])
 
 ### About reasoning\_content
 
-Thinking models such as `kimi-k3` and `kimi-k2.7-code` may return `reasoning_content` in addition to `content`. Only parse `choices[0].message.content` as the final JSON; do not call `json.loads` on the entire response object.
+Thinking models may return `reasoning_content` in addition to `content`. Only parse `choices[0].message.content` as the final JSON; do not call `json.loads` on the entire response object.
 
 ```python theme={null}
 content = completion.choices[0].message.content
@@ -132,16 +128,9 @@ result = json.loads(content)
 | `json_schema.strict` | boolean | Whether to strictly enforce the schema. Recommended to explicitly set to `true` |
 | `json_schema.schema` | object | JSON Schema object defining the output structure |
 
-> **Note**: Whether `strict` is `true`, `false`, or omitted, `kimi-k2.7-code` generally adheres to the schema well; `kimi-k2.6` is more likely to output fields outside the schema when `strict=false` or omitted. Always explicitly set `strict: true`.
-
 ## `strict` mode
 
 `json_schema.strict` is recommended to be set to `true`, meaning the model output **must** fully match the schema definition. In this case, your schema must comply with the **MFJS (Moonshot Flavored JSON Schema)** specification.
-
-> **MFJS model differences**:
->
-> * `kimi-k2.7-code` already has relatively complete support for features such as `anyOf` / `oneOf` / `$ref` / `additionalProperties: true`, and usually will not trigger MFJS errors.
-> * `kimi-k2.6` is more likely to hit MFJS limits with complex schemas; keep schemas simple.
 
 If `strict` is set to `false`, the API only guarantees that the output is a valid JSON object, but does not strictly enforce the internal field structure. This can be used when the schema is complex or you want to give the model more flexibility.
 
@@ -161,7 +150,7 @@ walle -schema 'your_schema_json' -level strict
 
 ## Nested objects and arrays example
 
-Structured Output supports arbitrarily deep nested objects and arrays, which is stable on `kimi-k2.7-code`:
+Structured Output supports nested objects and arrays:
 
 ```python theme={null}
 response_format={
@@ -229,25 +218,24 @@ response_format={
 | Use case | Rapid prototyping, non-critical paths | Production, API integration, data ingestion |
 | strict validation | None | Yes (MFJS specification) |
 
-The structural guarantee of constrained decoding holds when the schema complies with the MFJS specification; complex schemas may still be unstable on models such as `kimi-k2.6` — see the model-difference note above. For structured data consumed downstream, always use `json_schema` with `strict: true` to avoid writing extensive defensive code in the business layer.
+The structural guarantee of constrained decoding holds when the schema complies with the MFJS specification. For structured data consumed downstream, always use `json_schema` with `strict: true` to avoid writing extensive defensive code in the business layer.
 
 ## Notes
 
-1. **Schema must comply with MFJS**: When `strict=true`, use the `walle` CLI tool to pre-validate the schema. Common MFJS constraints are greatly relaxed on `kimi-k2.7-code`, but may still trigger on `kimi-k2.6`.
+1. **Schema must comply with MFJS**: When `strict=true`, use the `walle` CLI tool to pre-validate the schema.
 
 2. **Prompt still needs context**: Although the format is constrained by the schema, the model still needs to understand the **business content**. Please clearly describe the task objective and data source in the system prompt or user prompt.
 
 3. **`additionalProperties`**:
    * When set to `false`, the model will not output fields not defined in the schema.
-   * When set to `true` or omitted, `kimi-k2.7-code` allows extra fields; `kimi-k2.6` may also output extra fields, but with less stability than `kimi-k2.7-code`.
+   * When set to `true` or omitted, fields not defined in the schema are allowed.
 
-4. **Use nullable union types for missing information**: Fields declared in `required` always appear in the output. When the input lacks the corresponding information, a field declared with a single type (e.g. `"integer"`) may lead the model to fabricate content or return an empty string. Prefer a union type that allows `null` (e.g. `"type": ["integer", "null"]`), so the model can use `null` to explicitly mean "information missing" instead of the string `"unknown"` or a disappearing field — downstream code can then `json.loads` and cast to typed objects without defensive handling. Note that `kimi-k2.6` may still return empty strings (e.g. `"employee_id": ""`), so keep a null-value check in the business layer.
+4. **Use nullable union types for missing information**: Fields declared in `required` always appear in the output. When the input lacks the corresponding information, a field declared with a single type (e.g. `"integer"`) may lead the model to fabricate content or return an empty string. Prefer a union type that allows `null` (e.g. `"type": ["integer", "null"]`), so the model can use `null` to explicitly mean "information missing" instead of the string `"unknown"` or a disappearing field — downstream code can then `json.loads` and cast to typed objects without defensive handling.
 
 5. **Error handling**: When the schema is too complex or the prompt contradicts the schema, the model may output incomplete JSON (`finish_reason="length"`). We recommend checking `finish_reason` and appropriately increasing `max_tokens`.
 
 6. **Compatibility with Partial Mode**:
-   * `kimi-k2.7-code` usually works with `partial=true` on simple schemas, but complex schemas may still break structural constraints.
-   * `kimi-k2.6` is more likely to output fields outside the schema with `partial=true`, so **it is not recommended** to mix them on this model.
+   * `kimi-k3.1-pro` and `kimi-k3` can be used with `partial=true` on simple schemas. Avoid this combination with complex schemas.
 
 7. **Prefix cache**: setting `response_format` (or not setting it) **does not invalidate the prefix cache**, so you can adjust it on a per-request basis without hurting cache hit rates.
 
@@ -278,12 +266,12 @@ The model reached the `max_tokens` limit before outputting the complete JSON. We
 
 ### Field type mismatch / Markdown code block output
 
-On older models such as `kimi-k2.6`, the following may occur:
+The following issues may occur when model output does not conform to the schema:
 
 * The returned `content` contains a Markdown code block (e.g., `json ... `), causing `json.loads` to fail.
 * Complex schemas such as `oneOf` / `$ref` are not strictly followed.
 
 Recommendations:
 
-* Use `kimi-k2.7-code` for Structured Output calls.
-* If you must use `kimi-k2.6`, strip Markdown markers in the business layer first, then validate the parsed result against the schema fields.
+* Prefer `kimi-k3.1-pro` or `kimi-k3`.
+* If the output contains Markdown markers, strip them in the business layer first, then validate the parsed result against the schema fields.

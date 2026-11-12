@@ -10,7 +10,7 @@ Through an official partnership between the Kimi API Platform and ModelScope, yo
 
 ## Sync ModelScope-Hosted MCP Services
 
-Log in to Kimi Playground ([https://platform.kimi.ai/playground](https://platform.kimi.ai/playground)) and make sure you can have basic conversations with the Kimi K2 model.
+Log in to Kimi Playground ([https://platform.kimi.ai/playground](https://platform.kimi.ai/playground)) and make sure you can have basic conversations with `kimi-k3.1-pro`.
 
 MCP services are added in "MCP Server Settings", where ModelScope is selected as the default MCP service provider. If you haven't used the ModelScope MCP marketplace before, first refer to the [ModelScope official documentation](https://modelscope.cn/mcp/kimi-playground) to select and host your MCP services; you can also discover numerous MCP servers in the ModelScope community.
 

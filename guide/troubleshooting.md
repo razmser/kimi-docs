@@ -127,19 +127,15 @@
 >
 > [Use Partial Mode with the Kimi API](use-partial-mode-feature-of-kimi-api.md)
 >
-> To avoid `finish_reason=length`, we recommend increasing `max_completion_tokens` appropriately. A best practice is to use the [estimate-token-count](../api/estimate.md) API to calculate the number of tokens in the input, then subtract that number from the maximum context window supported by the selected model. For example, `kimi-k3.1-pro` supports up to 1M tokens, while `kimi-k2.7-code` and `kimi-k2.6` support up to 256k tokens. The remaining value can be used as the upper bound for `max_completion_tokens` in the current request.
+> To avoid `finish_reason=length`, increase `max_completion_tokens` appropriately. Use the [estimate-token-count](../api/estimate.md) API to calculate the input tokens, then subtract them from the selected model's context window to determine the remaining context capacity for the request. See the [Model Parameter Reference](../api/models-overview.md) for each model's context window.
 
 > [accordion] What is the output length of the Kimi model?
 >
-> * For `kimi-k3.1-pro`, `max_completion_tokens` defaults to 131072, and the maximum output length is `1024*1024 - prompt_tokens`.
-> * For `kimi-k2.7-code` and `kimi-k2.6`, the maximum output length is `256*1024 - prompt_tokens`.
+> `kimi-k3.1-pro` and `kimi-k3` support a 1M-token context window, and `max_completion_tokens` defaults to 131072. The available output length is also limited by the input tokens in the request.
 
 > [accordion] How many Chinese characters does the Kimi model support?
 >
-> * `kimi-k3.1-pro` supports approximately 1,500,000 Chinese characters.
-> * `kimi-k2.7-code` and `kimi-k2.6` support approximately 400,000 Chinese characters.
->
-> *Note: These are estimates. Actual results may vary.*
+> The number of Chinese characters supported depends on the selected model's context window and tokenization. Use [estimate-token-count](../api/estimate.md) to calculate the tokens in specific content.
 
 > [accordion] File extraction is inaccurate, or images cannot be recognized
 >

@@ -27,7 +27,7 @@ The signature only proves that the Kimi API accepted this nonce and request mode
 > )
 >
 > nonce: str = str(uuid.uuid4())
-> model: str = "kimi-k2.7-code"
+> model: str = "kimi-k3.1-pro"
 >
 > # 1. Call the model endpoint with X-Msh-Request-Nonce and read the response headers
 > raw = client.chat.completions.with_raw_response.create(
@@ -57,7 +57,7 @@ The signature only proves that the Kimi API accepted this nonce and request mode
 >
 > ```bash curl expandable theme={null}
 > NONCE="$(uuidgen)"
-> MODEL="kimi-k2.7-code"
+> MODEL="kimi-k3.1-pro"
 >
 > # 1. Call the model endpoint with X-Msh-Request-Nonce and save the response headers
 > curl -sS -D response.headers -o response.json \
@@ -89,7 +89,7 @@ The signature only proves that the Kimi API accepted this nonce and request mode
 >
 > async function main() {
 >     const nonce = randomUUID();
->     const model = "kimi-k2.7-code";
+>     const model = "kimi-k3.1-pro";
 >
 >     // 1. Call the model endpoint with X-Msh-Request-Nonce and read the response headers
 >     const { response } = await client.chat.completions
@@ -214,7 +214,7 @@ components:
             The `model` value from the request body of the model call, exactly
             as sent.
           minLength: 1
-          example: kimi-k2.7-code
+          example: kimi-k3.1-pro
         signature:
           type: string
           description: >-

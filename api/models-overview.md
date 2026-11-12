@@ -4,51 +4,43 @@
 
 # Model Parameter Reference
 
-> Compare default values, supported ranges, and constraints for Chat Completions API parameters across Kimi model families.
+> Compare Chat Completions API parameter defaults and constraints for the K3 series, Kimi K2.7 Code, and Kimi K2.6.
 
 ## Parameter Comparison
 
-<table>
-  <thead>
-    <tr />
-  </thead>
+The K3 series column applies to `kimi-k3`, `kimi-k3.1-pro`, and `kimi-k3.1-pro-highspeed`. `kimi-k2.7-code-highspeed` has the same parameter constraints as `kimi-k2.7-code`.
 
-  <tbody />
-</table>
-
-> [!NOTE]
->
-> When `temperature` is close to 0, `n` can only be 1. Otherwise, the API returns `invalid_request_error`.
-
-## Model Parameter Differences
-
-When switching models, you need to look beyond the `model` field — models differ in which request parameters they support and what defaults they use:
-
-`kimi-k3.1-pro` and `kimi-k3.1-pro-highspeed` also have the same parameter constraints as `kimi-k3`. The `K3 series` column below, along with the parameter configuration and migration guidance for `kimi-k3` later on this page, applies to both models.
-
-| Parameter | `K3` series | `kimi-k2.7-code` | `kimi-k2.6` |
+| Parameter | K3 series | `kimi-k2.7-code` | `kimi-k2.6` |
 | - | - | - | - |
 | Context window | 1M tokens | 256K tokens | 256K tokens |
-| `thinking` | — | May be omitted; if set explicitly, only `{"type":"enabled","keep":"all"}` is accepted | `{"type":"enabled"}` (default), `{"type":"disabled"}`, `{"type":"enabled","keep":"all"}` |
+| `thinking` | Not supported | Optional. Thinking and Preserved Thinking are always on. | Optional. Thinking is on by default; reasoning from previous turns is not preserved by default. |
 | `reasoning_effort` | `"low"` / `"high"` / `"max"` (default `"max"`) | Not supported | Not supported |
-| `tool_choice` | `auto` / `none` / `required` | `required` not supported | `required` not supported |
-| `temperature` | Fixed at `1.0` | Fixed at `1.0` | `1.0` thinking / `0.6` non-thinking |
+| [`tool_choice`](../guide/use-tool-choice.md) | `"auto"` / `"none"` / `"required"` | Passing `"required"` returns an error. | Passing `"required"` returns an error. |
+| `temperature` | Fixed at `1.0` | Fixed at `1.0` | Fixed at `1.0` with thinking on and `0.6` with thinking off |
 | `top_p` | Fixed at `0.95` | Fixed at `0.95` | Fixed at `0.95` |
 | `n` | Fixed at `1` | Fixed at `1` | Fixed at `1` |
 | `presence_penalty` / `frequency_penalty` | Fixed at `0` | Fixed at `0` | Fixed at `0` |
 
 > [!NOTE]
 >
-> "Fixed" means the parameter cannot be modified: passing any other value returns an error, so do not pass it explicitly.
+> "Fixed" means the parameter cannot be modified: passing any other value returns an error, so do not pass it explicitly. When `temperature` is close to 0, `n` can only be 1. Otherwise, the API returns `invalid_request_error`.
 
 ### `thinking`
 
-`thinking` is a K2.x-only request parameter:
+To turn off thinking for `kimi-k2.6`, set `thinking.type` to `"disabled"` in the request.
 
-* `kimi-k2.6`: supports `{"type": "enabled"}` (default), `{"type": "disabled"}`, and `{"type": "enabled", "keep": "all"}`.
-* `kimi-k2.7-code`: thinking is on by default and only `{"type": "enabled", "keep": "all"}` is accepted; any other configuration returns an error. When switching from `kimi-k2.6`, you must pass back the historical `reasoning_content` in `messages` as required by Preserved Thinking.
+```bash theme={null}
+curl https://api.moonshot.ai/v1/chat/completions \
+  --header "Authorization: Bearer $MOONSHOT_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "model": "kimi-k2.6",
+    "messages": [{"role": "user", "content": "What is 1 + 1?"}],
+    "thinking": {"type": "disabled"}
+  }'
+```
 
-See [Thinking Mode](../guide/use-thinking-models.md).
+With thinking off, the response does not include `reasoning_content`. For supported values of `thinking.type` and `thinking.keep`, see [Chat Completions](chat.md).
 
 ### `reasoning_effort`
 
@@ -58,72 +50,12 @@ K3 always reasons with Preserved Thinking enabled. Configure its reasoning effor
 >
 > Switching levels invalidates prefix-cache hits. Decide on the `effort` level before the conversation starts and avoid switching it mid-session.
 
-### `tool_choice`
-
-`kimi-k3` supports `auto` / `none` / `required`. `kimi-k2.6` and `kimi-k2.7-code` do not support `required` and return an error if it is passed. See [Tool Choice](../guide/use-tool-choice.md).
-
-### `temperature`
-
-* `kimi-k2.6`: fixed at `1.0` in thinking mode and `0.6` in non-thinking mode; other values return an error.
-* `kimi-k2.7-code`: fixed at `1.0`; other values return an error.
-* `kimi-k3`: fixed at `1.0`; other values return an error.
-
-Do not pass `temperature` explicitly when calling these models.
-
-`kimi-k2.7-code-highspeed` is the same model as `kimi-k2.7-code` with identical parameter constraints; only the output speed differs.
-
 ### FAQ
 
-**Switching from `kimi-k2.6` to `kimi-k3` — do I need to change my code?**
+**How do I switch from `kimi-k2.6` or `kimi-k2.7-code` to `kimi-k3`?**
 
-Replace `model` with `kimi-k3` and remove the K2.x `thinking` configuration. To set the reasoning effort explicitly, use top-level `reasoning_effort`. In multi-turn conversations and tool calls, pass the complete assistant message returned by the API back to `messages` as-is, including any `reasoning_content`.
-
-**Switching from `kimi-k2.7-code` to `kimi-k3` — do I need to change my code?**
-
-Replace `model` and continue passing complete assistant messages back as-is. To set the reasoning effort explicitly, use top-level `reasoning_effort`.
+Set `model` to `kimi-k3` and remove `thinking` from the request. Use the top-level `reasoning_effort` field to set the reasoning effort. In multi-turn conversations and tool calls, pass the complete `assistant` message returned by the API back in `messages`, including `reasoning_content`.
 
 **My code uses OpenAI's `reasoning_effort` — do I need to change it for `kimi-k3`?**
 
 No. K3 supports top-level `reasoning_effort` with `"low"`, `"high"`, and `"max"` as accepted values and `"max"` as the default.
-
-**Can I use `tool_choice: "required"` on `kimi-k2.6` or `kimi-k2.7-code`?**
-
-No. These models do not support `required` and return an error if it is passed; `kimi-k3.1-pro`, `kimi-k3.1-pro-highspeed`, and `kimi-k3` support it.
-
-## Kimi K2.7 Code series — thinking Parameter
-
-The `kimi-k2.7-code` series includes `kimi-k2.7-code` and its high-speed variant `kimi-k2.7-code-highspeed`; the two are the same model with identical parameter constraints (including the table above and the `thinking` behavior) and differ only in output speed (referred to collectively as `kimi-k2.7-code` below).
-
-`kimi-k2.7-code` is code-focused, and all parameter constraints except `thinking` are identical to `kimi-k2.6`. Unlike `kimi-k2.6`, its **thinking is always on and cannot be disabled** (passing `{"type": "disabled"}` errors), and **Preserved Thinking is always on** (`thinking.keep` is treated as `"all"` whether omitted or set to `"all"`; any other invalid value errors). So you do not need to pass the `thinking` parameter — just switch the `model`, and the model always emits `reasoning_content`. For details, see [Using Thinking Mode](../guide/use-thinking-models.md).
-
-## Kimi K2.6 — thinking Parameter
-
-Kimi K2.6 supports the `thinking` parameter to control whether deep thinking is enabled. Accepts `{"type": "enabled"}` or `{"type": "disabled"}`.
-
-Since the OpenAI SDK doesn't have a native `thinking` parameter, use `extra_body`:
-
-```python Python theme={null}
-completion = client.chat.completions.create(
-    model="kimi-k2.6",
-    messages=[
-        {"role": "user", "content": "Hello"}
-    ],
-    extra_body={
-        "thinking": {"type": "disabled"}
-    },
-    max_tokens=1024*32,
-)
-```
-
-```bash cURL theme={null}
-curl https://api.moonshot.ai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $MOONSHOT_API_KEY" \
-  -d '{
-    "model": "kimi-k2.6",
-    "messages": [
-      {"role": "user", "content": "Hello"}
-    ],
-    "thinking": {"type": "disabled"}
-  }'
-```

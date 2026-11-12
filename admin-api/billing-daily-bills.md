@@ -453,7 +453,7 @@ components:
       properties:
         model_id:
           type: string
-          example: kimi-k2.6
+          example: kimi-k3.1-pro
           description: Model ID.
         token_type:
           type: string

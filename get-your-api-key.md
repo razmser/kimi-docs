@@ -165,7 +165,7 @@ The examples on this page use the latest model `kimi-k3.1-pro` by default. K3.1 
 
 > [card] [Multimodal input](guide/use-kimi-vision-model.md)
 >
-> Kimi K3.1 Pro, Kimi K3, Kimi K2.7 Code, and Kimi K2.6 all support text, image, and video input.
+> Kimi K3.1 Pro and Kimi K3 support text, image, and video input.
 
 > [card] [Tool calls](guide/use-kimi-api-to-complete-tool-calls.md)
 >

@@ -120,7 +120,7 @@ Create an API key on the [Kimi Platform](https://platform.kimi.ai/console/api-ke
 
 ## Configure Environment Variables
 
-Write the following variables into the `env` field of `~/.claude/settings.json`, then restart Claude Code for them to take effect. This example sets the HAIKU tier to `kimi-k2.7-code` and all other tiers to `kimi-k3[1m]`.
+Write the following variables into the `env` field of `~/.claude/settings.json`, then restart Claude Code for them to take effect. This example sets every tier to `kimi-k3[1m]`.
 
 ```json theme={null}
 {
@@ -130,7 +130,7 @@ Write the following variables into the `env` field of `~/.claude/settings.json`,
     "ANTHROPIC_MODEL": "kimi-k3[1m]",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k3[1m]",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k3[1m]",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2.7-code",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k3[1m]",
     "ANTHROPIC_DEFAULT_FABLE_MODEL": "kimi-k3[1m]",
     "CLAUDE_CODE_SUBAGENT_MODEL": "kimi-k3[1m]",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
@@ -157,23 +157,15 @@ Claude Code uses different model tiers for different scenarios (main conversatio
 
 ## Models and Thinking Behavior
 
-How the three models behave in Claude Code:
-
-| Model | Thinking mode | Notes |
-| - | - | - |
-| `kimi-k3` (default) | On by default, can be turned off | Works out of the box, no extra configuration needed |
-| `kimi-k2.7-code` | Forced on, cannot be turned off | Must enable Thinking in Claude Code (`Option+T` on macOS, `Alt+T` on Windows/Linux) before use |
-| `kimi-k2.6` | Optional | Good for latency-sensitive simple tasks |
-
-With thinking off, requests to `kimi-k2.7-code` are rejected with `400 invalid thinking: only type=enabled is allowed for this model`.
+This configuration uses `kimi-k3[1m]` for every tier. K3 always reasons and enables Preserved Thinking. Set Claude Code reasoning effort with `CLAUDE_CODE_EFFORT_LEVEL`, which is `max` in this example.
 
 ## Confirm That the Configuration Took Effect
 
-After configuring, you can first verify the endpoint and API key with curl:
+Set `MOONSHOT_API_KEY` to the same API key you used in your Claude Code configuration, then verify the endpoint and key with cURL:
 
-```shell theme={null}
+```bash theme={null}
 curl https://api.moonshot.ai/anthropic/v1/messages \
-  --header "Authorization: Bearer YOUR_MOONSHOT_API_KEY" \
+  --header "Authorization: Bearer $MOONSHOT_API_KEY" \
   --header "Content-Type: application/json" \
   --data '{"model": "kimi-k3.1-pro", "max_tokens": 1, "messages": [{"role": "user", "content": "hi"}]}'
 ```

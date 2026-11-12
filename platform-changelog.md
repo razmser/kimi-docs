@@ -38,7 +38,7 @@ Kimi K3 — our flagship model for long-horizon coding and end-to-end knowledge 
 **June 2026**
 
 * Added organization-level API IP allowlists for finer enterprise security control.
-* Released Kimi K2.7 Code through the Open Platform API, followed by a HighSpeed variant — see the [Kimi K2.7 Code Quickstart](guide/kimi-k2-7-code-quickstart.md); custom top-up amounts are now supported.
+* Released Kimi K2.7 Code through the Open Platform API, followed by a HighSpeed variant; custom top-up amounts are now supported.
 
 **May 2026**
 
@@ -48,7 +48,7 @@ Kimi K3 — our flagship model for long-horizon coding and end-to-end knowledge 
 **April 2026**
 
 * The Batch API is now open to all users for lower-cost large-scale asynchronous inference — see [Use the Batch API](guide/use-batch-api.md).
-* Released Kimi K2.6 through the Open Platform API — see the [Kimi K2.6 Quickstart](guide/kimi-k2-6-quickstart.md).
+* Released Kimi K2.6 through the Open Platform API.
 
 **January 2026**
 

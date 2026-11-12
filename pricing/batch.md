@@ -12,7 +12,7 @@
 
 Batch API inference costs **60%** of the standard model price, making it well suited for large-scale tasks that do not require real-time responses.
 
-`kimi-k3.1-pro` and `kimi-k3` support a 1,048,576-token context window; `kimi-k2.7-code` and `kimi-k2.6` support 262,144 tokens.
+See the [Model Parameter Reference](../api/models-overview.md) for each model's context window.
 
 <table>
   <thead>
@@ -26,8 +26,8 @@ Batch API inference costs **60%** of the standard model price, making it well su
 
 ## Notes
 
-* Batch API supports the `kimi-k3.1-pro`, `kimi-k3`, `kimi-k2.7-code`, and `kimi-k2.6` models
-* Batch jobs on `kimi-k3.1-pro` and `kimi-k3` are also charged Cache Write fees; `kimi-k2.7-code` and `kimi-k2.6` do not support cache writes
+* See the table above for the models supported by Batch API
+* See the table above for Cache Write fees and support
 * Because batch requests are processed asynchronously and concurrently, cache hits are provided on a best-effort basis and are not guaranteed
 * Batch API is not subject to real-time concurrency limits, making it suitable for bulk tasks
 * Tasks must complete within the specified `completion_window`, or they expire

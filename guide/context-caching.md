@@ -133,7 +133,7 @@ For streaming Chat Completions API requests, set `stream_options.include_usage=t
 
 > [accordion] Which models support Cache Write?
 >
-> `kimi-k3.1-pro` and `kimi-k3` support Cache Write; `kimi-k2.7`, `kimi-k2.7-highspeed`, and `kimi-k2.6` do not.
+> `kimi-k3.1-pro` and `kimi-k3` support Cache Write.
 
 > [accordion] How are cache hits billed? Does renewal cost extra?
 >

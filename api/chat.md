@@ -402,14 +402,14 @@ Create a chat completion request. The model generates a response based on the pr
 
 > [accordion] Thinking Mode and Preserved Thinking
 >
-> The Kimi K3 series always enables thinking and Preserved Thinking, and uses the top-level `reasoning_effort` field (`"low"`, `"high"`, or `"max"`; default `"max"`). It does not use the K2.x `thinking` parameters below. `kimi-k2.6` and `kimi-k2.7-code` support thinking mode: the model first outputs its reasoning process (`reasoning_content`) before producing the final answer.
+> The Kimi K3 series always enables thinking and Preserved Thinking, and uses the top-level `reasoning_effort` field (`"low"`, `"high"`, or `"max"`; default `"max"`). It does not use the `thinking` parameter.
 >
-> **K2.x request parameters**
+> **Request parameters for Kimi K2.6 and Kimi K2.7 Code**
 >
-> | Field | Type | Description |
+> | Parameter | `kimi-k2.6` | `kimi-k2.7-code` and `kimi-k2.7-code-highspeed` |
 > | - | - | - |
-> | `thinking.type` | `"enabled"` \| `"disabled"` | Thinking switch (`kimi-k2.7-code` is always `enabled` and cannot be disabled) |
-> | `thinking.keep` | `null` \| `"all"` | Preserved Thinking: whether to retain historical `reasoning_content` in context. `kimi-k2.6` defaults to `null` (not kept) and accepts `"all"`; `kimi-k2.7-code` is fixed at `"all"` (kept), other values return an error |
+> | `thinking.type` | Defaults to `"enabled"`. Pass `"disabled"` to turn off thinking. | Only `"enabled"` is supported. Passing `"disabled"` returns an error. |
+> | `thinking.keep` | Defaults to `null`, which discards `reasoning_content` from previous turns. Pass `"all"` to enable Preserved Thinking. | The model preserves `reasoning_content` from previous turns whether you omit this field, pass `null`, or pass `"all"`. Other values return an error. |
 >
 > **Response fields**
 >
@@ -434,11 +434,11 @@ Create a chat completion request. The model generates a response based on the pr
 >
 > > [!WARNING]
 > >
-> > When using a thinking model in multi-turn conversations, always preserve the `reasoning_content` of each historical assistant message in `messages`, otherwise the model may lose reasoning context.
+> > When Preserved Thinking is enabled, pass the `reasoning_content` from previous `assistant` messages back in `messages` without changes to preserve the reasoning context.
 >
 > > [!NOTE]
 > >
-> > See [Use the Kimi K2 Thinking Mode](../guide/use-thinking-models.md) for details.
+> > See [Use Thinking Mode](../guide/use-thinking-models.md) for details.
 
 > [accordion] Streaming
 >
@@ -674,6 +674,11 @@ components:
             - model
     KimiK27CodeChatRequest:
       title: kimi-k2.7-code
+      deprecated: true
+      description: >-
+        No longer available to newly registered users. Users who registered
+        before November 1, 2026, can continue using this model until its planned
+        retirement at the end of December 2026.
       allOf:
         - $ref: '#/components/schemas/ChatRequestBase'
         - type: object
@@ -757,6 +762,11 @@ components:
             - model
     KimiK26ChatRequest:
       title: kimi-k2.6
+      deprecated: true
+      description: >-
+        No longer available to newly registered users. Users who registered
+        before November 1, 2026, can continue using this model until its planned
+        retirement at the end of December 2026.
       allOf:
         - $ref: '#/components/schemas/ChatRequestBase'
         - type: object

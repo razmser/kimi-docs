@@ -2,7 +2,7 @@
 
 Markdown mirror of [Kimi's documentation](https://platform.kimi.ai/docs/get-your-api-key).
 
-Contains **111 pages**, discovered from the [page index](https://platform.kimi.ai/docs/llms.txt) and [supplementary index](https://platform.kimi.ai/docs/sitemap.xml).
+Contains **109 pages**, discovered from the [page index](https://platform.kimi.ai/docs/llms.txt) and [supplementary index](https://platform.kimi.ai/docs/sitemap.xml).
 
 Links to mirrored pages point to local files; external links and images remain online. Code examples and OpenAPI blocks are preserved.
 
@@ -82,8 +82,6 @@ Generated files are replaced by the next successful sync. Original content belon
 - [Best Practices for context caching](guide/context-caching.md)
 - [Set Parameters for Multi-turn Chat](guide/engage-in-multi-turn-conversations-using-kimi-api.md)
 - [Use Kimi API Platform with Kimi Code CLI](guide/kimi-code-cli.md)
-- [Kimi K2.6](guide/kimi-k2-6-quickstart.md)
-- [Kimi K2.7 Code](guide/kimi-k2-7-code-quickstart.md)
 - [Kimi K3.1 Pro](guide/kimi-k3-1-pro-quickstart.md)
 - [Kimi K3](guide/kimi-k3-quickstart.md)
 - [Kimi K3 API Tool Calling Best Practices](guide/kimi-k3-tool-calling-best-practice.md)

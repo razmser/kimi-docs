@@ -10,19 +10,15 @@ Thinking models use reasoning tokens to "think" before producing a final answer 
 
 ## Choose the right thinking model
 
-This page covers the following thinking models:
+This page uses the following thinking models:
 
 * **`kimi-k3.1-pro`**: the flagship thinking model; reasoning and Preserved Thinking are always on, and `reasoning_content` may be returned. Configure its reasoning effort with the top-level `reasoning_effort` request field, which supports `"low"` / `"high"` / `"max"` (default `"max"`).
-* **`kimi-k2.7-code`**: code-focused; **thinking is always on**, and **Preserved Thinking is always on**. Its high-speed variant `kimi-k2.7-code-highspeed` is the same model with identical thinking behavior, and everything on this page applies to it as well.
-* **`kimi-k2.6`**: the general-purpose thinking model; thinking is on by default, can be disabled, and **supports Preserved Thinking**.
+* **`kimi-k3`**: supports a 1M-token context window and follows the same thinking behavior as K3.1 Pro.
 
-The request parameters differ across these models:
-
-| Request field | `kimi-k3.1-pro` | `kimi-k3` | `kimi-k2.7-code` | `kimi-k2.6` |
-| - | - | - | - | - |
-| `reasoning_effort` | `"low"` / `"high"` / `"max"` (default `"max"`) | `"low"` / `"high"` / `"max"` (default `"max"`) | Not supported | Not supported |
-| `thinking.type` | — | — | Only `"enabled"`; always thinks. Passing `"disabled"` errors | `"enabled"` (default) / `"disabled"` |
-| `thinking.keep` | — | — | Omitting it or passing the valid value `"all"` is treated as `"all"` (always on, cannot be turned off); any other invalid value errors | `null` (default, not kept) / `"all"` (enables it) |
+| Request field | `kimi-k3.1-pro` | `kimi-k3` |
+| - | - | - |
+| `reasoning_effort` | `"low"` / `"high"` / `"max"` (default `"max"`) | `"low"` / `"high"` / `"max"` (default `"max"`) |
+| `thinking` | Not supported | Not supported |
 
 If you are doing benchmark testing with kimi api, please refer to this [benchmark best practice](benchmark-best-practice.md).
 
@@ -73,162 +69,15 @@ If you are doing benchmark testing with kimi api, please refer to this [benchmar
 
 For multi-turn conversations and tool calls, pass the complete assistant message returned by the API back to `messages` as-is (including `reasoning_content`); see [Preserved Thinking](#preserved-thinking). For more K3.1 Pro usage, see the [Kimi K3.1 Pro Quickstart](kimi-k3-1-pro-quickstart.md).
 
-### Call kimi-k2.7-code: no thinking parameter needed
-
-`kimi-k2.7-code` is a code-focused thinking model, sharing the same thinking mechanism as `kimi-k2.6` (`reasoning_content`, multi-step tool calls, streaming, etc.); the only difference is in the `thinking` parameter (see the comparison table above). You do not need to (and should not) pass the `thinking` parameter — just switch the `model`, and the model always emits `reasoning_content`. Because Preserved Thinking is always on, in multi-turn conversations you must keep the `reasoning_content` of every historical assistant message in `messages` as-is.
-
-The example below makes a minimal streaming call and separates the reasoning content from the final answer in the output:
-
-> [tab] curl
->
-> ```bash theme={null}
-> $ curl https://api.moonshot.ai/v1/chat/completions \
->     -H "Content-Type: application/json" \
->     -H "Authorization: Bearer $MOONSHOT_API_KEY" \
->     -d '{
->         "model": "kimi-k2.7-code",
->         "messages": [
->             {
->                 "role": "system",
->                 "content": "You are Kimi."
->             },
->             {
->                 "role": "user",
->                 "content": "Implement quicksort in Python."
->             }
->         ]
->     }'
-> ```
-
-> [tab] python
->
-> ```python theme={null}
-> import os
-> import openai
->
-> client = openai.Client(
->     base_url="https://api.moonshot.ai/v1",
->     api_key=os.getenv("MOONSHOT_API_KEY"),
-> )
->
-> stream = client.chat.completions.create(
->     model="kimi-k2.7-code",
->     messages=[
->         {
->             "role": "system",
->             "content": "You are Kimi.",
->         },
->         {
->             "role": "user",
->             "content": "Implement quicksort in Python."
->         },
->     ],
->     max_tokens=1024*32,
->     stream=True,
->     # temperature is not modifiable and thinking is always on; neither needs to be set
-> )
->
-> thinking = False
-> for chunk in stream:
->     if chunk.choices:
->         choice = chunk.choices[0]
->         if choice.delta and hasattr(choice.delta, "reasoning_content"):
->             if not thinking:
->                 thinking = True
->                 print("=============Start Reasoning=============")
->             print(getattr(choice.delta, "reasoning_content"), end="")
->         if choice.delta and choice.delta.content:
->             if thinking:
->                 thinking = False
->                 print("\n=============End Reasoning=============")
->             print(choice.delta.content, end="")
-> ```
-
-### Call kimi-k2.6: reasoning output by default
-
-`kimi-k2.6` is the general-purpose thinking model. Thinking is enabled by default, so the basic call below outputs reasoning content without passing the `thinking` parameter (to disable thinking or enable Preserved Thinking, see [the thinking parameter](#thinking-parameter) below):
-
-> [tab] curl
->
-> ```bash theme={null}
-> $ curl https://api.moonshot.ai/v1/chat/completions \
->     -H "Content-Type: application/json" \
->     -H "Authorization: Bearer $MOONSHOT_API_KEY" \
->     -d '{
->         "model": "kimi-k2.6",
->         "messages": [
->             {
->                 "role": "system",
->                 "content": "You are Kimi."
->             },
->             {
->                 "role": "user",
->                 "content": "Please explain why 1+1=2."
->             }
->         ]
->     }'
-> ```
-
-> [tab] python
->
-> ```python theme={null}
-> import os
-> import openai
->
-> client = openai.Client(
->     base_url="https://api.moonshot.ai/v1",
->     api_key=os.getenv("MOONSHOT_API_KEY"),
-> )
->
-> stream = client.chat.completions.create(
->     model="kimi-k2.6",
->     messages=[
->         {
->             "role": "system",
->             "content": "You are Kimi.",
->         },
->         {
->             "role": "user",
->             "content": "Please explain why 1+1=2."
->         },
->     ],
->     max_tokens=1024*32,
->     stream=True,
->     # temperature is not modifiable, so no need to set it; thinking is enabled by default, no extra parameters needed
-> )
->
-> thinking = False
-> for chunk in stream:
->     if chunk.choices:
->         choice = chunk.choices[0]
->         if choice.delta and hasattr(choice.delta, "reasoning_content"):
->             if not thinking:
->                 thinking = True
->                 print("=============Start Reasoning=============")
->             print(getattr(choice.delta, "reasoning_content"), end="")
->         if choice.delta and choice.delta.content:
->             if thinking:
->                 thinking = False
->                 print("\n=============End Reasoning=============")
->             print(choice.delta.content, end="")
-> ```
-
 ## Control thinking behavior
 
 ### K3.1 Pro: adjust reasoning effort with `reasoning_effort`
 
 `kimi-k3.1-pro` always reasons and does not support the `thinking` parameter. Adjust reasoning effort with the top-level `reasoning_effort` field (`"low"` / `"high"` / `"max"`, default `"max"`); see [Reasoning Effort](use-reasoning-effort.md) for usage and examples.
 
-### Control kimi-k2.6 thinking with the thinking parameter
-
-`kimi-k2.6` controls thinking behavior via the `thinking` parameter, which has two sub-fields:
-
-* `thinking.type`: `"enabled"` (default) | `"disabled"` — controls whether thinking is on. Since it defaults to `"enabled"`, the example above thinks without passing it explicitly; for a disable example see [Disable Thinking Capability Example](kimi-k2-6-quickstart.md#disable-thinking-capability-example).
-* `thinking.keep`: `null` (default, ignores historical turns' thinking) | `"all"` (keeps previous turns' `reasoning_content`, enabling Preserved Thinking — see [Preserved Thinking](#preserved-thinking) for usage).
-
 ## Read reasoning\_content from the response
 
-For thinking models such as `kimi-k2.7-code` and `kimi-k2.6` (with thinking enabled), the API response carries the model's reasoning in the `reasoning_content` field. When reading this field:
+When using a thinking model with thinking enabled, the API response carries the model's reasoning in the `reasoning_content` field. When reading this field:
 
 * In the OpenAI SDK, `ChoiceDelta` and `ChatCompletionMessage` types do not provide a `reasoning_content` field directly, so you cannot access it via `.reasoning_content`. You must use `hasattr(obj, "reasoning_content")` to check if the field exists, and if so, use `getattr(obj, "reasoning_content")` to retrieve its value.
 * If you use other frameworks or directly interface with the HTTP API, you can directly obtain the `reasoning_content` field at the same level as the `content` field.
@@ -237,11 +86,11 @@ For thinking models such as `kimi-k2.7-code` and `kimi-k2.6` (with thinking enab
 
 ## Configure multi-step tool calls
 
-`kimi-k2.7-code` and `kimi-k2.6` (with thinking enabled) are designed to perform deep reasoning across multiple tool calls, enabling them to tackle highly complex tasks. To get reliable results, **always follow these configuration rules when using thinking models:**
+Thinking models can perform deep reasoning across multiple tool calls to tackle complex tasks. To get reliable results, **always follow these configuration rules when using thinking models:**
 
-* Within a single task (the multi-step reasoning produced during one tool-call loop), keep all of the reasoning content from the context (the `reasoning_content` field) and send it back with the request; the model will choose which parts are necessary and forward them for reasoning. Whether historical thinking is preserved *across turns* is controlled by `thinking.keep` (`kimi-k2.6` defaults to `null` and does not keep it, while `kimi-k2.7-code` always keeps it).
+* In both single-task tool-call loops and multi-turn conversations, pass the complete assistant message back as-is, including `reasoning_content`. `kimi-k3.1-pro` and `kimi-k3` always enable Preserved Thinking.
 * Set `max_tokens >= 16000` to ensure the full `reasoning_content` and `content` can be returned without truncation.
-* **Do not set `temperature`.** For `kimi-k2.7-code` and `kimi-k2.6`, `temperature` is not modifiable — use the default and do not pass it explicitly (see [Model Parameter Reference](../api/models-overview.md)).
+* **Do not set `temperature`.** `kimi-k3.1-pro` and `kimi-k3` fix `temperature` at `1.0`; do not pass it explicitly (see [Model Parameter Reference](../api/models-overview.md)).
 * Enable streaming (`stream=True`). Because thinking models return both `reasoning_content` and regular `content`, the response is larger than usual. Streaming delivers a better user experience and helps avoid network-timeout issues.
 
 ### Complete example: generate a daily news report
@@ -269,8 +118,8 @@ class FormulaChatClient:
             headers={"Authorization": f"Bearer {api_key}"},
             timeout=30.0,
         )
-        # Using kimi-k2.6 model. Thinking is enabled by default
-        self.model = "kimi-k2.6"
+        # Use kimi-k3.1-pro; reasoning and Preserved Thinking are always enabled
+        self.model = "kimi-k3.1-pro"
 
     def get_tools(self, formula_uri: str):
         """Get tool definitions from Formula API"""
@@ -445,92 +294,23 @@ print("\nConversation completed!")
 client.close()
 ```
 
-This process demonstrates how thinking models such as `kimi-k2.7-code` and `kimi-k2.6` (with thinking enabled) use deep reasoning to plan and execute complex multi-step tasks, with detailed reasoning steps (`reasoning_content`) preserved in the context to ensure accurate tool use at every stage.
+This process demonstrates how thinking models use deep reasoning to plan and execute complex multi-step tasks when thinking is enabled. Detailed reasoning steps (`reasoning_content`) are preserved in the context to ensure accurate tool use at every stage.
 
 ## Preserve thinking across turns (Preserved Thinking)
 
-Preserved Thinking means passing the `reasoning_content` of previous turns through to the model in a multi-turn conversation, so that the model can continue its prior chain of thought when reasoning in the current turn.
+Preserved Thinking means passing the `reasoning_content` of previous turns through to the model in a multi-turn conversation so that the model can continue its prior reasoning context.
 
-For `kimi-k2.6`, use the `thinking.keep` parameter in the request body to control whether historical thinking is preserved:
-
-| Value | Behavior |
-| - | - |
-| `null` / omitted (default) | Historical `reasoning_content` is ignored. Shorter context and lower cost. |
-| `"all"` | Historical `reasoning_content` is fully preserved, enabling Preserved Thinking. |
-
-> [!NOTE]
->
-> `thinking.keep` only affects `reasoning_content` from historical turns; it does **not** change whether the model generates/outputs thinking content within the current turn (that is controlled by `thinking.type`). Recommended to use `keep: "all"` together with `type: "enabled"`.
->
-> For `kimi-k2.7-code`, Preserved Thinking is always on and cannot be turned off: `thinking.keep` is treated as `"all"` whether you omit it or pass the only valid value `"all"` (passing any other invalid value returns an error). When using this model you must therefore (not optionally) keep the `reasoning_content` of historical assistant messages in `messages` as-is, exactly as shown in the example below.
-
-When using `keep: "all"`, keep the `reasoning_content` from every historical assistant message in `messages` as-is. The simplest way is to append the assistant message returned from the previous API call directly back into `messages`, as shown below:
-
-> [tab] curl
->
-> ```bash theme={null}
-> $ curl https://api.moonshot.ai/v1/chat/completions \
->     -H "Content-Type: application/json" \
->     -H "Authorization: Bearer $MOONSHOT_API_KEY" \
->     -d '{
->         "model": "kimi-k2.6",
->         "messages": [
->             {"role": "system", "content": "You are Kimi."},
->             {"role": "user", "content": "First question..."},
->             {
->                 "role": "assistant",
->                 "reasoning_content": "<reasoning_content returned by the previous API call>",
->                 "content": "<final answer returned by the previous API call>"
->             },
->             {"role": "user", "content": "Please continue the analysis and derive the next step."}
->         ],
->         "thinking": {
->             "type": "enabled",
->             "keep": "all"
->         }
->     }'
-> ```
-
-> [tab] python
->
-> ```python theme={null}
-> import os
-> import openai
->
-> client = openai.Client(
->     base_url="https://api.moonshot.ai/v1",
->     api_key=os.getenv("MOONSHOT_API_KEY"),
-> )
->
-> # Keep the assistant message (including reasoning_content) from every previous API call in messages
-> messages = [
->     {"role": "system", "content": "You are Kimi."},
->     {"role": "user", "content": "First question..."},
->     {
->         "role": "assistant",
->         "reasoning_content": "<reasoning_content returned by the previous API call>",
->         "content": "<final answer returned by the previous API call>",
->     },
->     {"role": "user", "content": "Please continue the analysis and derive the next step."},
-> ]
->
-> response = client.chat.completions.create(
->     model="kimi-k2.6",
->     messages=messages,
->     stream=True,
->     extra_body={"thinking": {"type": "enabled", "keep": "all"}},
-> )
-> ```
+`kimi-k3.1-pro` and `kimi-k3` always enable Preserved Thinking. In multi-turn conversations and tool calls, append the complete assistant message returned by the API to `messages` as-is, including `reasoning_content`; do not keep only the final answer text.
 
 > [!WARNING]
 >
-> `reasoning_content` counts toward token consumption. When Preserved Thinking is enabled, historical thinking content keeps occupying the context window and is billed accordingly. Use it wisely.
+> `reasoning_content` consumes tokens. Historical reasoning content continues to occupy context space and is billed, so keep the context size under control.
 
 ## Frequently Asked Questions
 
 ### Q1: Why should I keep `reasoning_content`?
 
-A: Keeping `reasoning_content` ensures continuity in multi-step reasoning, especially during tool calls. Pass the complete assistant message returned by the API back in `messages` as-is. For K3.1 Pro and K3, this is required in multi-turn conversations and tool-call loops. For K2.x, cross-turn preservation follows each model's `thinking.keep` behavior: `kimi-k2.6` does not preserve it by default, while `kimi-k2.7-code` always does.
+A: Keeping `reasoning_content` ensures continuity in multi-step reasoning, especially during tool calls. For K3.1 Pro and K3, multi-turn conversations and tool calls must pass the complete assistant message returned by the API back in `messages` as-is.
 
 ### Q2: Does `reasoning_content` consume extra tokens?
 

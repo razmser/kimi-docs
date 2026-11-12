@@ -179,7 +179,7 @@ Note that the cache is stored in blocks: any partial block that does not fill a 
 
 * Dynamic tool declarations use **exactly the same format** as global `tools` declarations, so you maintain a single schema and migration stays cheap;
 * A `system` message carrying `tools` also consumes context length, so only inject the tools the current conversation genuinely needs;
-* Dynamically loaded tools are currently supported only on `kimi-k3.1-pro` and `kimi-k3`; on other models (e.g. `kimi-k2.6`) the request fails with a `tokenization failed` error;
+* Dynamically loaded tools are currently supported only on `kimi-k3.1-pro` and `kimi-k3`; requests on models that do not support this capability fail with a `tokenization failed` error;
 * A `system` message carrying `tools` must not also carry a `content` field, otherwise the request fails with a 400 error (`cannot be used with content`); with the OpenAI SDK you can pass the `tools` field through directly in `messages`, with no `extra_body` needed.
 
 ## Related reading

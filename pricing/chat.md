@@ -64,5 +64,3 @@ See each model's guide for capabilities and recommended use cases:
 
 * [Kimi K3.1 Pro](../guide/kimi-k3-1-pro-quickstart.md)
 * [Kimi K3](../guide/kimi-k3-quickstart.md)
-* [Kimi K2.7 Code](../guide/kimi-k2-7-code-quickstart.md)
-* [Kimi K2.6](../guide/kimi-k2-6-quickstart.md)

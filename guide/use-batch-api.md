@@ -10,7 +10,7 @@ When you need to process large-scale tasks with low real-time requirements, the 
 
 > [!NOTE]
 >
-> Batch API supports the `kimi-k3.1-pro`, `kimi-k3`, `kimi-k2.7-code`, and `kimi-k2.6` models. The `temperature`, `top_p`, and other parameters cannot be modified for these models — do not include them in the request body.
+> See [BatchJob Pricing](../pricing/batch.md) for the models supported by Batch API. The `temperature`, `top_p`, and other parameters cannot be modified for these models — do not include them in the request body.
 
 > [card] [Create Batch](../api/batch-create.md)
 >
@@ -37,7 +37,7 @@ This guide walks through a complete text classification example using the Batch 
 Each line in the JSONL file is an independent JSON object representing a single inference request:
 
 ```json theme={null}
-{"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "kimi-k2.6", "messages": [{"role": "system", "content": "You are a text classification assistant."}, {"role": "user", "content": "Classify this text: AI is transforming the world"}]}}
+{"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "kimi-k3.1-pro", "messages": [{"role": "system", "content": "You are a text classification assistant."}, {"role": "user", "content": "Classify this text: AI is transforming the world"}]}}
 ```
 
 | Field | Required | Description |
@@ -49,7 +49,7 @@ Each line in the JSONL file is an independent JSON object representing a single 
 
 > [!WARNING]
 >
-> The `model` in `body` must be `kimi-k3.1-pro`, `kimi-k3`, `kimi-k2.7-code`, or `kimi-k2.6`. The `temperature`, `top_p`, `n`, `presence_penalty`, and `frequency_penalty` parameters cannot be modified for these models. Do not include these parameters in the `body`.
+> The `model` in `body` must be one of the supported models listed in [BatchJob Pricing](../pricing/batch.md). The `temperature`, `top_p`, `n`, `presence_penalty`, and `frequency_penalty` parameters cannot be modified for these models. Do not include these parameters in the `body`.
 
 > [!NOTE]
 >
@@ -279,7 +279,7 @@ Each line in the output file corresponds to a processed request:
       "id": "chatcmpl-xxx",
       "object": "chat.completion",
       "created": 1711475054,
-      "model": "kimi-k2.6",
+      "model": "kimi-k3.1-pro",
       "choices": [
         {
           "index": 0,
@@ -313,7 +313,7 @@ from pathlib import Path
 
 from openai import OpenAI
 
-MODEL = "kimi-k2.6"
+MODEL = "kimi-k3.1-pro"
 
 client = OpenAI(
     api_key=os.environ.get("MOONSHOT_API_KEY"),
@@ -390,7 +390,7 @@ for line in output.text.strip().split("\n"):
 const OpenAI = require("openai");
 const fs = require("fs");
 
-const MODEL = "kimi-k2.6";
+const MODEL = "kimi-k3.1-pro";
 
 const client = new OpenAI({
     apiKey: process.env.MOONSHOT_API_KEY,
@@ -586,7 +586,7 @@ The Batch API supports image and video content in the input file. The key differ
 >     base_url=os.environ.get("MOONSHOT_BASE_URL", "https://api.moonshot.ai/v1"),
 > )
 >
-> MODEL = "kimi-k2.6"
+> MODEL = "kimi-k3.1-pro"
 > PROMPT = "Classify this image: Landscape/Portrait/Food/Architecture/Other"
 > SYSTEM = "You are an image classification assistant."
 >
@@ -693,7 +693,7 @@ The Batch API supports image and video content in the input file. The key differ
 >     baseURL: process.env.MOONSHOT_BASE_URL || "https://api.moonshot.ai/v1",
 > });
 >
-> const MODEL = "kimi-k2.6";
+> const MODEL = "kimi-k3.1-pro";
 > const PROMPT = "Classify this image: Landscape/Portrait/Food/Architecture/Other";
 > const SYSTEM = "You are an image classification assistant.";
 >
@@ -821,7 +821,7 @@ The Batch API supports image and video content in the input file. The key differ
 > from openai import OpenAI
 > from openai.types import Batch, FileObject
 >
-> MODEL = "kimi-k2.6"
+> MODEL = "kimi-k3.1-pro"
 >
 > client = OpenAI(
 >     api_key=os.environ.get("MOONSHOT_API_KEY"),
@@ -934,7 +934,7 @@ The Batch API supports image and video content in the input file. The key differ
 >     baseURL: process.env.MOONSHOT_BASE_URL || "https://api.moonshot.ai/v1",
 > });
 >
-> const MODEL = "kimi-k2.6";
+> const MODEL = "kimi-k3.1-pro";
 > const PROMPT = "Summarize the main content of this video.";
 > const SYSTEM = "You are a video content analysis assistant.";
 >

@@ -39,7 +39,7 @@ client = OpenAI(
 )
 ```
 
-The examples use the **kimi-k3.1-pro** model. To use another model such as kimi-k2.6, just replace the model field, but note that parameter support differs between models. See the [model parameter reference](../api/models-overview.md).
+The examples use the **kimi-k3.1-pro** model. To use another model, replace the `model` field, but note that parameter support differs between models. See the [model parameter reference](../api/models-overview.md).
 
 The sample file is the PDF of the [Kimi K3 technical report](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf) from the official MoonshotAI GitHub repository. Download it with the code below (or use any PDF of your own; the Files API supports .pdf, .txt, .csv, .doc, and .docx, with a 100MB limit per file):
 

@@ -16,7 +16,7 @@
 
 ## Fields and reconciliation
 
-* `product`: product identifier (model/product name, e.g. `kimi-k2.5`, `moonshot-v1-8k`); `product_type`: product type; `business_type`: business type (e.g. `chat`, `batch`). The enums grow with the product line — clients should keep raw strings and ignore unknown values.
+* `product`: product identifier (model/product name, e.g. `kimi-k3.1-pro`); `product_type`: product type; `business_type`: business type (e.g. `chat`, `batch`). Historical bills may still return retired product IDs — clients should keep raw strings and ignore unknown values.
 * Reconciling with `daily_bills` `model_details`: product bills aggregate by product (not by key); `total_fee` in daily bills minus the sum of `model_details` rows equals non-token charges (cache-call, tool\_call, cache storage, BatchAPI, etc.), which are only included in the outer totals.
 
 

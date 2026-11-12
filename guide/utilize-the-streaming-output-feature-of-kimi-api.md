@@ -537,4 +537,4 @@ Whatever the language, the basic steps for handling streaming output are the sam
 
 > [!NOTE]
 >
-> Current models (`kimi-k3.1-pro`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`) fix `n` at `1` and do not support returning multiple responses in a single request. Passing an `n` greater than 1 returns a 400 error (`invalid n: only 1 is allowed for this model`) for both streaming and non-streaming requests. See the [Model Parameter Reference](../api/models-overview.md) for per-model parameter constraints.
+> `kimi-k3.1-pro` and `kimi-k3` fix `n` at `1` and do not support returning multiple responses in a single request. Passing an `n` greater than 1 returns a 400 error (`invalid n: only 1 is allowed for this model`) for both streaming and non-streaming requests. See the [Model Parameter Reference](../api/models-overview.md) for per-model parameter constraints.

@@ -72,8 +72,6 @@
     "guide/context-caching.md": "https://platform.kimi.ai/docs/guide/context-caching.md",
     "guide/engage-in-multi-turn-conversations-using-kimi-api.md": "https://platform.kimi.ai/docs/guide/engage-in-multi-turn-conversations-using-kimi-api.md",
     "guide/kimi-code-cli.md": "https://platform.kimi.ai/docs/guide/kimi-code-cli.md",
-    "guide/kimi-k2-6-quickstart.md": "https://platform.kimi.ai/docs/guide/kimi-k2-6-quickstart.md",
-    "guide/kimi-k2-7-code-quickstart.md": "https://platform.kimi.ai/docs/guide/kimi-k2-7-code-quickstart.md",
     "guide/kimi-k3-1-pro-quickstart.md": "https://platform.kimi.ai/docs/guide/kimi-k3-1-pro-quickstart.md",
     "guide/kimi-k3-quickstart.md": "https://platform.kimi.ai/docs/guide/kimi-k3-quickstart.md",
     "guide/kimi-k3-tool-calling-best-practice.md": "https://platform.kimi.ai/docs/guide/kimi-k3-tool-calling-best-practice.md",

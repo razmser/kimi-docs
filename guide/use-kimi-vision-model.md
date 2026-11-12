@@ -6,7 +6,7 @@
 
 > Build image and video inputs for Kimi multimodal models using base64, URLs, file uploads, and multi-image conversations.
 
-The Kimi Vision Model (including `kimi-k3.1-pro` / `kimi-k3` / `kimi-k2.6` / `kimi-k2.7-code` / `kimi-k2.7-code-highspeed` and so on) can understand visual content, including text in the image, colors, and the shapes of objects. The `kimi-k3.1-pro`, `kimi-k3`, `kimi-k2.6`, `kimi-k2.7-code` and `kimi-k2.7-code-highspeed` models can also understand video content. When you need the model to recognize images or videos, build multimodal requests as described on this page.
+`kimi-k3.1-pro` and `kimi-k3` support text, image, and video input. When you need the model to recognize images or videos, build multimodal requests as described on this page.
 
 ## Upload images directly with base64
 

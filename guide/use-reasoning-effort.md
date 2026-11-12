@@ -20,7 +20,7 @@ Set `reasoning_effort` at the top level of the Chat Completions request:
 }
 ```
 
-When migrating from K2.x to K3, remove the K2.x `thinking` configuration and use top-level `reasoning_effort` as needed.
+When migrating from K2.x to `kimi-k3.1-pro`, remove the K2.x `thinking` configuration and use top-level `reasoning_effort` as needed.
 
 > [tab] curl
 >

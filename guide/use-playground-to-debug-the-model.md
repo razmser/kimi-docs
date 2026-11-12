@@ -22,7 +22,7 @@ The [Playground development workbench](https://platform.kimi.ai/playground) is a
 
 **Model Configuration**
 
-* **Model Selection**: Choose from currently available models such as Kimi K3.1 Pro, Kimi K3, Kimi K2.7 Code, and Kimi K2.6
+* **Model Selection**: Choose from currently available models such as Kimi K3.1 Pro and Kimi K3
 * **Parameter Configuration**: For supported parameters and field descriptions, see [Request Parameter Description](../api/chat.md)
 
 **Model Conversation**
