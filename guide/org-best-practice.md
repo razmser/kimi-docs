@@ -29,7 +29,7 @@ The project and API key limits depend on your organization verification type:
 | Default | 20 | 50 |
 | Enterprise Verified | 50 | 100 |
 
-If you need higher limits, fill out the [Contact Sales](https://platform.kimi.ai/contact-sales) form.
+If you need higher limits, fill out the [Contact Sales](https://www.kimi.ai/contact-sales) form.
 
 ## Example Use Cases
 

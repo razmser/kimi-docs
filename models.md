@@ -39,4 +39,4 @@ Click [here](pricing/chat.md) to see more details of model price.
 | `kimi-latest` | Deprecated |
 | `kimi-thinking-preview` | Deprecated |
 
-For further assistance, please [contact sales](https://platform.kimi.ai/contact-sales).
+For further assistance, please [contact sales](https://www.kimi.ai/contact-sales).

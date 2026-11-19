@@ -29,11 +29,11 @@
 
 > [accordion] How do I increase my API rate limits?
 >
-> To ensure fair resource allocation and prevent abuse, rate limits are currently based on the account's accumulated top-up amount. For higher limits, please submit the [rate limit increase form](https://platform.kimi.ai/contact-sales). For more details, see the [Top-up and Rate Limits](../pricing/limits.md) page.
+> To ensure fair resource allocation and prevent abuse, rate limits are currently based on the account's accumulated top-up amount. For higher limits, please submit the [rate limit increase form](https://www.kimi.ai/contact-sales). For more details, see the [Top-up and Rate Limits](../pricing/limits.md) page.
 
 > [accordion] Are dedicated products and services available for business customers?
 >
-> * The Kimi sales team can provide additional resources and support for business customers using the Kimi API. Please fill out the form at [https://platform.kimi.ai/contact-sales](https://platform.kimi.ai/contact-sales) to contact sales.
+> * The Kimi sales team can provide additional resources and support for business customers using the Kimi API. Please fill out the form at [https://www.kimi.ai/contact-sales](https://www.kimi.ai/contact-sales) to contact sales.
 > * Kimi Assistant now offers Kimi Business membership benefits. Visit [https://www.kimi.ai/membership/pricing](https://www.kimi.ai/membership/pricing) to subscribe online.
 
 > [accordion] How do I request an invoice?
