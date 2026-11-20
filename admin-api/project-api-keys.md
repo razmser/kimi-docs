@@ -15,6 +15,8 @@
 * Only inference API keys that are not deleted (`deleted_at` is null) and not system keys (`source` is empty): revoked keys are excluded, and system keys never appear in this list.
 * Returned in full, in creation order (`created_at` ASC); no pagination parameters.
 
+For key version differences and security configuration in the console, see [Manage your organization with the Admin API](../guide/org-admin-api.md).
+
 
 ## OpenAPI
 
@@ -28,10 +30,10 @@ info:
 
 
     The Kimi Admin API lets organization administrators manage members,
-    invitations, projects, and inference API keys programmatically, and query
-    billing, usage, and audit logs — without signing in to the console. It is a
-    control-plane API: Admin API credentials cannot call any inference endpoint,
-    and inference API keys cannot call this API.
+    invitations, and projects; look up, rename, and revoke inference API keys;
+    and query billing, usage, and audit logs — without signing in to the
+    console. It is a control-plane API: Admin API credentials cannot call any
+    inference endpoint, and inference API keys cannot call this API.
 
 
     The base URL is `https://api.moonshot.ai/v1`.
@@ -83,8 +85,9 @@ info:
     | `org:read` | read | Members, invitations, projects, project members,
     inference API key metadata, spend limits, organization rate limits |
 
-    | `org:write` | write | Member/invitation/project/key writes (implies
-    `org:read` — no separate grant needed) |
+    | `org:write` | write | Write operations on members, invitations, projects,
+    and project members; inference API key rename and revoke; and project spend
+    limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 
     | `audit:read` | read | Audit log events |
 

@@ -12,6 +12,32 @@
 >
 > Audit logging is enabled per organization: an organization admin turns it on under Console → Organization → Admin API Keys → the audit log card. While disabled, this endpoint returns an empty list — indistinguishable from "no events". Once enabled, events become queryable from that moment on: nothing is backfilled, and gaps while disabled are unrecoverable. Every call to this endpoint itself records an `audit_log.read` audit event.
 
+## API key and IP whitelist audit events
+
+| Operation | `event_type` | `target_type` |
+| - | - | - |
+| API key renamed | `api_key.updated` | `api_key` |
+| API key revoked | `api_key.deleted` | `api_key` |
+| v2 API key manually disabled | `api_key.disabled` | `api_key` |
+| v2 API key manually enabled | `api_key.enabled` | `api_key` |
+| v2 API key IP whitelist policy binding changed | `api_key.ip_whitelist_binding_updated` | `api_key` |
+| Custom IP whitelist policy created | `ip_whitelist_policy.created` | `ip_whitelist_policy` |
+| Custom IP whitelist policy updated | `ip_whitelist_policy.updated` | `ip_whitelist_policy` |
+| Custom IP whitelist policy deleted | `ip_whitelist_policy.deleted` | `ip_whitelist_policy` |
+
+Use `event_types` to filter one or more events and `target_type` to filter the target resource. The following example queries v2 API key disable and enable events within the specified time window:
+
+```sh theme={null}
+curl --get https://api.moonshot.ai/v1/admin/organizations/audit_logs \
+  --header "Authorization: Bearer $MOONSHOT_ADMIN_KEY" \
+  --data-urlencode "start=1790784000000" \
+  --data-urlencode "end=1790870400000" \
+  --data-urlencode "event_types=api_key.disabled,api_key.enabled" \
+  --data-urlencode "target_type=api_key"
+```
+
+To query custom policy events, use `target_type=ip_whitelist_policy` and set `event_types` to the corresponding `ip_whitelist_policy.*` event.
+
 
 ## OpenAPI
 
@@ -25,10 +51,10 @@ info:
 
 
     The Kimi Admin API lets organization administrators manage members,
-    invitations, projects, and inference API keys programmatically, and query
-    billing, usage, and audit logs — without signing in to the console. It is a
-    control-plane API: Admin API credentials cannot call any inference endpoint,
-    and inference API keys cannot call this API.
+    invitations, and projects; look up, rename, and revoke inference API keys;
+    and query billing, usage, and audit logs — without signing in to the
+    console. It is a control-plane API: Admin API credentials cannot call any
+    inference endpoint, and inference API keys cannot call this API.
 
 
     The base URL is `https://api.moonshot.ai/v1`.
@@ -80,8 +106,9 @@ info:
     | `org:read` | read | Members, invitations, projects, project members,
     inference API key metadata, spend limits, organization rate limits |
 
-    | `org:write` | write | Member/invitation/project/key writes (implies
-    `org:read` — no separate grant needed) |
+    | `org:write` | write | Write operations on members, invitations, projects,
+    and project members; inference API key rename and revoke; and project spend
+    limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 
     | `audit:read` | read | Audit log events |
 
@@ -352,6 +379,12 @@ components:
         - api_key.created
         - api_key.updated
         - api_key.deleted
+        - api_key.disabled
+        - api_key.enabled
+        - api_key.ip_whitelist_binding_updated
+        - ip_whitelist_policy.created
+        - ip_whitelist_policy.updated
+        - ip_whitelist_policy.deleted
         - admin_api_key.created
         - admin_api_key.updated
         - admin_api_key.deleted
@@ -383,10 +416,22 @@ components:
 
         | `api_key.created` | Business API key created. |
 
-        | `api_key.updated` | Business API key updated (rename /
-        enable-disable). |
+        | `api_key.updated` | Business API key renamed. |
 
         | `api_key.deleted` | Business API key deleted (revoked). |
+
+        | `api_key.disabled` | v2 Business API key manually disabled. |
+
+        | `api_key.enabled` | v2 Business API key manually enabled. |
+
+        | `api_key.ip_whitelist_binding_updated` | v2 Business API key IP
+        whitelist policy binding changed. |
+
+        | `ip_whitelist_policy.created` | Custom IP whitelist policy created. |
+
+        | `ip_whitelist_policy.updated` | Custom IP whitelist policy updated. |
+
+        | `ip_whitelist_policy.deleted` | Custom IP whitelist policy deleted. |
 
         | `admin_api_key.created` | Admin key created (console self-serve
         issuance). |
@@ -408,8 +453,8 @@ components:
 
         | `organization.member_removed` | Organization member removed. |
 
-        | `organization.ip_whitelist_updated` | Organization IP whitelist
-        overwritten as a whole. |
+        | `organization.ip_whitelist_updated` | Organization default IP
+        whitelist policy overwritten as a whole. |
 
         | `organization.audit_log_enabled` | Organization audit log enabled (by
         an org admin). |
@@ -449,6 +494,7 @@ components:
         - project
         - invite
         - ip_whitelist
+        - ip_whitelist_policy
         - user
         - organization
         - audit_log
@@ -462,7 +508,8 @@ components:
         | `member` | Organization / project member (uid). |
         | `project` | Project (`proj-` prefixed). |
         | `invite` | Invitation. |
-        | `ip_whitelist` | Organization IP whitelist. |
+        | `ip_whitelist` | Organization default IP whitelist policy. |
+        | `ip_whitelist_policy` | Custom IP whitelist policy. |
         | `user` | Platform user (login event subject). |
         | `organization` | Organization. |
         | `audit_log` | Audit log (self-audit event target). |

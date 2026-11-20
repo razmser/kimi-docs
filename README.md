@@ -2,7 +2,7 @@
 
 Markdown mirror of [Kimi's documentation](https://platform.kimi.ai/docs/get-your-api-key).
 
-Contains **109 pages**, discovered from the [page index](https://platform.kimi.ai/docs/llms.txt) and [supplementary index](https://platform.kimi.ai/docs/sitemap.xml).
+Contains **113 pages**, discovered from the [page index](https://platform.kimi.ai/docs/llms.txt) and [supplementary index](https://platform.kimi.ai/docs/sitemap.xml).
 
 Links to mirrored pages point to local files; external links and images remain online. Code examples and OpenAPI blocks are preserved.
 
@@ -77,7 +77,9 @@ Generated files are replaced by the next successful sync. Original content belon
 - [Best Practices for Benchmarking](guide/benchmark-best-practice.md)
 - [Best Practices for Web Search](guide/best-practices-for-web-search.md)
 - [Use Kimi in Claude Code](guide/claude-code-kimi.md)
+- [Clear Old Tool Results](guide/clear-old-tool-results.md)
 - [Use Kimi K3.1 Pro in Codex](guide/codex-kimi.md)
+- [Compact Conversation History](guide/compact-conversation-history.md)
 - [Configure ModelScope MCP Server in Playground](guide/configure-the-modelscope-mcp-server.md)
 - [Best Practices for context caching](guide/context-caching.md)
 - [Set Parameters for Multi-turn Chat](guide/engage-in-multi-turn-conversations-using-kimi-api.md)
@@ -89,10 +91,12 @@ Generated files are replaced by the next successful sync. Original content belon
 - [Manage Your Organization with the Admin API](guide/org-admin-api.md)
 - [Manage Your Organization in the Console](guide/org-best-practice.md)
 - [Compare with Other Kimi Products](guide/product-plans.md)
+- [Programmatic Tool Calling](guide/programmatic-tool-calling.md)
 - [Best Practices for Prompts](guide/prompt-best-practice.md)
 - [Use response_format to control model output format](guide/response_format.md)
 - [How to Fix Repeated Tool Calls](guide/tool-call-repeat.md)
 - [Troubleshooting](guide/troubleshooting.md)
+- [Use a Flagship Model as an Advisor Tool](guide/use-advisor-tool.md)
 - [Using Batch API for Bulk Processing](guide/use-batch-api.md)
 - [Using the Console for Batch Inference](guide/use-batch-inference.md)
 - [Dynamically Loaded Tools](guide/use-dynamic-tool-loading.md)

@@ -4,13 +4,17 @@
 
 # Revoke API key
 
-> Revokes (soft-deletes) a inference API key, effective immediately. Repeating the revoke returns `404 key_not_found`.
+> Revokes (soft-deletes) an inference API key. Revocation is not immediate and can be delayed by caches. Repeating the revoke returns `404 key_not_found`.
 
 > [!NOTE]
 >
 > This endpoint requires an Admin Key with the `org:write` scope, and the key owner must still be an organization admin at call time (otherwise `403 owner_not_admin`).
 >
 > Use this for leak response and offboarding revocation.
+
+Both v1 and v2 inference API keys can be revoked. The change can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path. After it takes effect, inference calls made with the key return `401 incorrect_api_key_error`.
+
+When audit logging is enabled, a successful revocation records an `api_key.deleted` audit event.
 
 
 ## OpenAPI
@@ -25,10 +29,10 @@ info:
 
 
     The Kimi Admin API lets organization administrators manage members,
-    invitations, projects, and inference API keys programmatically, and query
-    billing, usage, and audit logs — without signing in to the console. It is a
-    control-plane API: Admin API credentials cannot call any inference endpoint,
-    and inference API keys cannot call this API.
+    invitations, and projects; look up, rename, and revoke inference API keys;
+    and query billing, usage, and audit logs — without signing in to the
+    console. It is a control-plane API: Admin API credentials cannot call any
+    inference endpoint, and inference API keys cannot call this API.
 
 
     The base URL is `https://api.moonshot.ai/v1`.
@@ -80,8 +84,9 @@ info:
     | `org:read` | read | Members, invitations, projects, project members,
     inference API key metadata, spend limits, organization rate limits |
 
-    | `org:write` | write | Member/invitation/project/key writes (implies
-    `org:read` — no separate grant needed) |
+    | `org:write` | write | Write operations on members, invitations, projects,
+    and project members; inference API key rename and revoke; and project spend
+    limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 
     | `audit:read` | read | Audit log events |
 
@@ -191,8 +196,11 @@ paths:
         - Organization
       summary: Revoke project API key
       description: >-
-        Revokes (soft-deletes) a inference API key, effective immediately.
-        Repeating the revoke returns `404 key_not_found`.
+        Revokes (soft-deletes) an inference API key. The change can take up to
+        about 30 seconds on the console side and up to about 60 seconds across
+        the API call path. After it takes effect, inference calls made with the
+        key return `401 incorrect_api_key_error`. Repeating the revoke returns
+        `404 key_not_found`.
       operationId: revokeOrgAPIKey
       parameters:
         - name: pid

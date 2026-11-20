@@ -4,11 +4,13 @@
 
 # Rename API key
 
-> Renames a inference API key. The key must belong to the project and to the authenticated organization. The name allows 1-30 UTF-8 characters. The secret is never returned.
+> Renames an inference API key. The key must belong to the project and to the authenticated organization. The name allows 1-30 UTF-8 characters. The secret is never returned.
 
 > [!NOTE]
 >
 > This endpoint requires an Admin Key with the `org:write` scope, and the key owner must still be an organization admin at call time (otherwise `403 owner_not_admin`).
+
+Both v1 and v2 inference API keys can be renamed. Renaming changes only the name, not the expiration or access policy; a v2 key's expiration can be set only at creation. When audit logging is enabled, a successful rename records an `api_key.updated` audit event.
 
 
 ## OpenAPI
@@ -23,10 +25,10 @@ info:
 
 
     The Kimi Admin API lets organization administrators manage members,
-    invitations, projects, and inference API keys programmatically, and query
-    billing, usage, and audit logs — without signing in to the console. It is a
-    control-plane API: Admin API credentials cannot call any inference endpoint,
-    and inference API keys cannot call this API.
+    invitations, and projects; look up, rename, and revoke inference API keys;
+    and query billing, usage, and audit logs — without signing in to the
+    console. It is a control-plane API: Admin API credentials cannot call any
+    inference endpoint, and inference API keys cannot call this API.
 
 
     The base URL is `https://api.moonshot.ai/v1`.
@@ -78,8 +80,9 @@ info:
     | `org:read` | read | Members, invitations, projects, project members,
     inference API key metadata, spend limits, organization rate limits |
 
-    | `org:write` | write | Member/invitation/project/key writes (implies
-    `org:read` — no separate grant needed) |
+    | `org:write` | write | Write operations on members, invitations, projects,
+    and project members; inference API key rename and revoke; and project spend
+    limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 
     | `audit:read` | read | Audit log events |
 

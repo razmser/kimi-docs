@@ -25,10 +25,10 @@ info:
 
 
     The Kimi Admin API lets organization administrators manage members,
-    invitations, projects, and inference API keys programmatically, and query
-    billing, usage, and audit logs — without signing in to the console. It is a
-    control-plane API: Admin API credentials cannot call any inference endpoint,
-    and inference API keys cannot call this API.
+    invitations, and projects; look up, rename, and revoke inference API keys;
+    and query billing, usage, and audit logs — without signing in to the
+    console. It is a control-plane API: Admin API credentials cannot call any
+    inference endpoint, and inference API keys cannot call this API.
 
 
     The base URL is `https://api.moonshot.ai/v1`.
@@ -80,8 +80,9 @@ info:
     | `org:read` | read | Members, invitations, projects, project members,
     inference API key metadata, spend limits, organization rate limits |
 
-    | `org:write` | write | Member/invitation/project/key writes (implies
-    `org:read` — no separate grant needed) |
+    | `org:write` | write | Write operations on members, invitations, projects,
+    and project members; inference API key rename and revoke; and project spend
+    limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 
     | `audit:read` | read | Audit log events |
 

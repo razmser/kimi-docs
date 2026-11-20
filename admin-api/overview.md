@@ -4,9 +4,9 @@
 
 # Admin API overview
 
-> Manage organization members, invitations, projects, and inference API keys programmatically, and query billing, usage, and audit logs.
+> Manage organization members, invitations, and projects; look up, rename, and revoke inference API keys; and query billing, usage, and audit logs.
 
-The Kimi Admin API lets organization administrators manage members, invitations, projects, and inference API keys programmatically, and query billing, usage, and audit logs — without signing in to the console. It is a **control-plane** API: Admin API credentials cannot call any inference endpoint, and inference API keys cannot call this API.
+The Kimi Admin API lets organization administrators manage members, invitations, and projects; look up, rename, and revoke inference API keys; and query billing, usage, and audit logs — without signing in to the console. It is a **control-plane** API: Admin API credentials cannot call any inference endpoint, and inference API keys cannot call this API.
 
 > [!NOTE]
 >
@@ -33,7 +33,7 @@ Every key carries scopes chosen at creation:
 | - | - | - |
 | `billing:read` | read | Daily/product bills, request details, interrupted requests, account balance, usage aggregation |
 | `org:read` | read | Members, invitations, projects, project members, inference API key metadata, spend limits, organization rate limits |
-| `org:write` | write | Write operations on members, invitations, projects, project members, inference API keys, and project spend limits (implies `org:read`, but not `billing:read` or `audit:read`) |
+| `org:write` | write | Write operations on members, invitations, projects, and project members; inference API key rename and revoke; and project spend limits (implies `org:read`, but not `billing:read` or `audit:read`) |
 | `audit:read` | read | Audit log events |
 | `all` | read+write | Everything above; new scopes are covered automatically |
 
@@ -49,6 +49,17 @@ Every key carries scopes chosen at creation:
 Organization roles and project roles share the same names but have different meanings: `role` in organization-member endpoints refers to the **organization role**, while `role` in project-member endpoints refers to the **project role**. Only `admin` and `member` can be granted through the API.
 
 Write endpoints additionally require the key owner to be an organization **admin** at call time and are rate-limited more strictly (see below).
+
+## Inference API key versions and access control
+
+The Admin API supports metadata lookup, renaming, and revocation for inference API keys. Key creation, expiration configuration, disable/enable, IP whitelist configuration, and source-IP lookup are performed in the console. For detailed rules, see [Manage your organization with the Admin API](../guide/org-admin-api.md).
+
+| Version | Lifecycle and management | Security capabilities |
+| - | - | - |
+| v1 | Can remain in use; supports rename and delete | No expiration, disable/enable, or IP whitelist |
+| v2 | New keys use the `sk-ms-` prefix; supports rename, disable, enable, and delete | Expiration configured at creation, IP whitelist, and source-IP lookup |
+
+v1 keys cannot be migrated or upgraded in place. To use the new capabilities, create a v2 key and replace the old key.
 
 ## Rate limits
 

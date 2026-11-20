@@ -4,7 +4,7 @@
 
 # Manage Your Organization in the Console
 
-> Understand the hierarchy of organizations, projects, and API keys, and use the console to set project budgets and rate limits, manage members, configure an IP whitelist, and review organization and project consumption.
+> Understand the hierarchy of organizations, projects, and API keys and the difference between v1 and v2 keys, and use the console to set project budgets and rate limits, manage members, configure IP whitelist access policies, and review organization and project consumption.
 
 On Kimi Open Platform, an organization is the top-level unit for account and resource management. You can create multiple projects in an organization and multiple API keys in each project.
 
@@ -19,6 +19,8 @@ On Kimi Open Platform, an organization is the top-level unit for account and res
 To find your organization ID, open **General** under **Organization** in the console.
 
 All projects in an organization share the organization's account balance and rate limits. API usage is tracked separately for each project, so you can monitor and manage spending by project.
+
+API keys come in two versions. New keys are v2 and use the `sk-ms-` prefix, with support for expiration, disable/enable, IP whitelist access policies, and source-IP lookup. v1 keys remain usable but do not support these capabilities and cannot be upgraded in place, so create a v2 key to replace them when needed. Check a key's version in the **Version** column of the **API Keys** list, and see [Manage your organization with the Admin API](org-admin-api.md) for the full capability matrix.
 
 ### Project and API Key Limits
 
@@ -74,17 +76,20 @@ To prevent service interruptions due to an insufficient account balance, configu
 
 The default alert threshold is \$5 and can be customized. When your account balance falls below the threshold, the platform sends an email to the organization's registered email address.
 
-### Configure IP Whitelist
+### Configure IP Whitelist Access Policies
 
-IP Whitelist is an organization-level security setting on Kimi Open Platform. After you save the configuration, only IP addresses in the whitelist can access APIs under the current organization. API requests from other IP addresses are denied.
+IP whitelists are an organization-level security setting on Kimi Open Platform, available to organizations that have completed personal or enterprise verification. Access policies apply only to v2 inference API keys; v1 keys do not support IP whitelists.
 
-When the IP whitelist is empty, API requests are not restricted by source IP. When saved, the current list overwrites the existing configuration.
+The **Access policies** page centrally manages two types of IP whitelist policies:
+
+| Policy | Description |
+| :- | :- |
+| Organization default policy | Built-in and cannot be deleted. Applies to all v2 keys in the organization, and new keys use it by default. It may be empty; when empty, requests are not restricted by source IP. |
+| Custom policy | Created for specific business needs and can be bound to multiple v2 keys. Its CIDR ranges take effect as a union with the organization default policy. A custom policy with associated keys cannot be deleted. |
 
 #### Entry and Permissions
 
-After logging in to [Kimi Open Platform](https://platform.kimi.ai/), open **General** under **Organization**. If the current organization is eligible, the **IP Whitelist** entry is displayed in the upper-right corner of the page.
-
-![IP Whitelist entry on the General page](https://mintcdn.com/moonshotai/XZ7XhlELUUihWth8/images/image-1.png?fit=max\&auto=format\&n=XZ7XhlELUUihWth8\&q=85\&s=038c45601ed0e0632071978cd1724211)
+After logging in to [Kimi Open Platform](https://platform.kimi.ai/), open **Access policies** under **Organization** in the left navigation.
 
 The entry and configuration permissions are as follows:
 
@@ -94,21 +99,16 @@ The entry and configuration permissions are as follows:
 | Organization verification completed | Yes | Current account |
 | Enterprise Verified | Yes | Organization creator, organization administrator |
 
-If you do not see the **IP Whitelist** entry, check whether organization verification has been completed and whether your account has the required permission. For enterprise organizations, only the organization creator and organization administrators can configure the whitelist.
+If you do not see the **Access policies** entry, check whether organization verification has been completed and whether your account has the required permission. For enterprise organizations, only the organization creator and organization administrators can configure access policies.
 
-#### Fill in the IP / CIDR List
+#### Create a Custom Policy
 
-Click **IP Whitelist**, then enter the allowed IP addresses or CIDR ranges in the **IP / CIDR List** field.
+Click **Create policy**, enter a policy name, an optional description, and the **IP Whitelist**, then save. Please note:
 
-![IP Whitelist configuration dialog](https://mintcdn.com/moonshotai/xj_lFFJOSHPWb3c6/images/%E5%9B%BE%E7%89%87.png?fit=max\&auto=format\&n=xj_lFFJOSHPWb3c6\&q=85\&s=86eee873764adf84040317bb00f56e8f)
-
-Please note:
-
-* Enter one item per line. You can also separate items with commas or spaces.
-* You can configure up to 20 items.
-* Only public IPv4 addresses and valid IPv4 CIDR ranges are supported.
-* IPv6 is not currently supported.
-* Saving the whitelist overwrites the existing configuration. Before saving, make sure the list contains every IP address or CIDR range you want to keep.
+* Add entries row by row, or switch to batch paste to enter multiple entries at once.
+* Only public IPv4 addresses and valid IPv4 CIDR ranges are supported. A single IP address is automatically treated as `/32`. IPv6 and private ranges are not supported.
+* Entries are normalized and deduplicated on save, and ranges contained within broader ranges are removed.
+* Standard organizations can configure up to 100 entries, and enterprise organizations up to 1,000 entries.
 
 Example:
 
@@ -135,7 +135,7 @@ The system validates the input before saving. The following items cannot be save
 * private IPv4 addresses or private IPv4 ranges;
 * loopback addresses, link-local addresses, multicast addresses, reserved addresses, and other non-public IPv4 addresses;
 * invalid CIDR ranges;
-* lists with more than 20 items.
+* lists that exceed the entry limit.
 
 Common invalid examples:
 
@@ -147,19 +147,29 @@ Common invalid examples:
 | Link-local address | `169.254.0.0/16` |
 | Multicast or reserved address | `224.0.0.0/4`, `240.0.0.0/4` |
 
-If the input contains invalid items, the dialog shows an error message and marks the invalid entries. Fix the issues before saving.
+If the input contains invalid items, the page shows an error message and marks the invalid entries. Fix the issues before saving.
 
-#### Clear the IP Whitelist
+#### Edit the Organization Default Policy
 
-To remove IP whitelist restrictions, open the **IP Whitelist** dialog, clear all entries in the **IP / CIDR List** field, and click **Save**.
+The organization default policy applies to all v2 keys in the organization, and new keys use it by default. Click **Edit** on the default policy to modify its **IP Whitelist** list. Saving overwrites the existing configuration, so make sure the list contains every range you want to keep.
 
-After the empty list is saved, API access under the current organization is no longer restricted by IP whitelist checks.
+After you clear the list and save, the default policy becomes empty, and v2 keys are no longer restricted by source IP through the default policy.
 
-#### Scope
+> [!WARNING]
+>
+> A key's effective list is the union of the organization default policy and any bound custom policy. When the effective list is empty, requests are not restricted by source IP, and any IP can call the API. Confirm that this is intended.
 
-The IP whitelist applies to API access under the current organization. After it is configured, all API calls made with API keys under the current organization are subject to this whitelist.
+#### Access Policies When Creating a v2 Key
 
-If your service is deployed in multiple regions or uses multiple network egress points, add every public egress IP address or CIDR range that needs to access the Kimi API to the whitelist. This helps prevent disruptions to production requests after saving.
+When you create a key under **API Keys**, the new key is v2 and uses the organization default access policy by default. You can also add one custom policy, and the CIDR ranges take effect as a union. If the effective CIDR list is empty, the creation dialog warns that requests are not restricted by source IP. Confirm you understand the security risk before proceeding.
+
+For v2 key capabilities such as expiration, disable/enable, and source-IP lookup, see [Manage your organization with the Admin API](org-admin-api.md).
+
+#### Effective Timing and Call Behavior
+
+* Whitelist changes can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path.
+* When the source IP is not in the effective list, API requests are rejected with HTTP 403 (`permission_denied_error`).
+* If your service is deployed in multiple regions or uses multiple network egress points, add every public egress IP address or CIDR range that needs to access the Kimi API to the policy. This helps prevent disruptions to production requests after saving.
 
 ### View Organization Consumption
 

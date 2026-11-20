@@ -30,7 +30,7 @@ The Kimi Open Platform now provides the **Admin API** for organization managemen
 | Cost allocation | Aggregate bills and usage by project and map them to departments or business lines. | Track costs and usage by team. |
 | Balance monitoring and top-up reminders | Check the account balance periodically and trigger an alert or initiate a top-up approval workflow when it falls below a configured threshold. | Identify low balances early and arrange top-ups. |
 | 429 troubleshooting | Query organization rate limits and cross-check usage data against application request logs to identify the cause. | Determine whether rate limiting caused the error and narrow down the possible causes. |
-| Security auditing | Regularly retrieve Admin API key information and audit logs for your internal audit process. | Spot unusual activity and permission changes. |
+| Security auditing | Regularly retrieve Admin API key information and audit logs covering key renames, revocations, disable/enable events, whitelist binding changes, and custom policy changes for your internal audit process. | Spot unusual activity, permission changes, and key security configuration changes. |
 
 ## Quickstart
 
@@ -47,7 +47,7 @@ As an organization admin, open **Organization → Admin API Keys** and create a 
 | What you need to do | Required scope |
 | - | - |
 | View members, projects, inference API keys, and other organization information | Organization read (`org:read`) |
-| Manage members, invitations, projects, project members, and inference API keys | Organization read and write (`org:write`, which includes organization read) |
+| Manage members, invitations, projects, and project members, and rename or revoke inference API keys | Organization read and write (`org:write`, which includes organization read) |
 | Query bills, account balance, and usage | Billing read (`billing:read`) |
 | Query audit logs | Audit read (`audit:read`) |
 
@@ -94,7 +94,48 @@ You can use the API to [add project members](../admin-api/project-member-add.md)
 
 ### Manage inference API keys
 
-You can use the API to [query](../admin-api/project-api-keys.md), [rename](../admin-api/api-key-rename.md), and [revoke](../admin-api/api-key-revoke.md) existing inference API keys, but not to create them. Before revoking a key, confirm its project and owner to avoid disrupting active workloads.
+You can use the Admin API to [query](../admin-api/project-api-keys.md), [rename](../admin-api/api-key-rename.md), and [revoke](../admin-api/api-key-revoke.md) existing inference API keys, but not to create them. Key creation, expiration configuration, disable/enable, IP whitelist configuration, and source-IP lookup are performed in the console. Before revoking a key, confirm its project and owner to avoid disrupting active workloads.
+
+#### v1 and v2 key capabilities
+
+| Version | Lifecycle and management | Security capabilities |
+| - | - | - |
+| v1 | Can remain in use; supports rename and delete | No expiration, disable/enable, or IP whitelist |
+| v2 | New keys use the `sk-ms-` prefix; supports rename, disable, enable, and delete | Expiration configured at creation, IP whitelist, and source-IP lookup |
+
+v1 keys cannot be migrated or upgraded in place. To use the new capabilities, create a v2 key and replace the old key. The console list shows each key's version, status, expiration, and access policy.
+
+#### Key expiration
+
+* Expiration can be configured only when creating a v2 key. Choose 3 hours, 1 day, 7 days, 30 days, a custom expiration, or never; the creation page previews the expiration time in UTC+8.
+* Expiration cannot be changed or cleared after creation.
+* An expired key becomes invalid permanently and cannot be recovered; create a new key instead.
+* Expiration takes effect at the configured time, with no additional cache window.
+
+#### IP whitelist access policies
+
+* The **Access policies** page provides the organization default policy and custom policies. The organization default policy is built in, cannot be deleted, and may be empty. A custom policy can be reused across multiple keys.
+* A key follows the organization default policy by default and can add one custom policy. The CIDR ranges from both policies are combined as a union.
+* Only public IPv4 addresses are supported. Single IP addresses are automatically converted to `/32`; private networks and IPv6 are not supported.
+* Entries are normalized and deduplicated on save, and ranges contained within broader ranges are removed. Standard organizations can configure up to 100 entries, and enterprise organizations up to 1,000 entries.
+* A custom policy with associated keys cannot be deleted.
+
+> [!WARNING]
+>
+> An empty effective list allows requests from any source IP. Confirm that this is intended before saving.
+
+#### Source IP lookup
+
+For v2 keys, open **Source IPs** from the console key list to view source IP addresses and request counts by UTC+8 calendar day. The default view is today; historical dates are available, and future dates cannot be selected.
+
+#### Effective timing and inference call behavior
+
+| Scenario | Inference call behavior or effective timing |
+| - | - |
+| Key disabled, deleted, or expired | HTTP 401, `incorrect_api_key_error` |
+| Source IP not allowed by the whitelist | HTTP 403, `permission_denied_error`, with the message `Your IP is not allowed to access this organization` |
+| Disable, enable, delete, policy rebinding, or whitelist modification | The change can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path |
+| Key expiration | Takes effect at the expiration time, with no additional cache window; irreversible |
 
 ## Query organization data
 
@@ -118,6 +159,8 @@ Daily bills, product bills, and request details for a given day become available
 
 An organization admin must enable audit logging in the console first. Only events generated after it is enabled are available. Earlier events are not backfilled, and no events are recorded while it is disabled.
 
+Audit logs also record v2 inference API key disable and enable events, IP whitelist policy binding changes, and custom IP whitelist policy creation, updates, and deletion. Filter them with `event_types` and `target_type`; see the [audit log API reference](../admin-api/audit-logs.md) for event values and examples.
+
 ## Usage notes
 
 * **Review Admin API key ownership**: If a key owner leaves the organization or their account is deactivated, their Admin API keys stop working. Review key owners and scopes regularly, and reassign related automation tasks promptly.
@@ -132,11 +175,11 @@ An organization admin must enable audit logging in the console first. Only event
 
 > [accordion] Where are Admin API keys and inference API keys created?
 >
-> Both are created in the console. Organization admins create Admin API keys under **Organization → Admin API Keys**. Inference API keys are created under **Organization → API Keys**. The Admin API can query, rename, and revoke existing inference API keys, but cannot create them.
+> Both are created in the console. Organization admins create Admin API keys under **Organization → Admin API Keys**. Inference API keys are created under **Organization → API Keys**. New inference API keys are v2 and use the `sk-ms-` prefix; expiration can be set only at creation. Existing v1 keys remain usable but cannot be upgraded in place. The Admin API can query, rename, and revoke existing inference API keys, but cannot create them.
 
 > [accordion] What happens when I revoke an inference API key or archive a project?
 >
-> Revoking an inference API key takes effect immediately, and subsequent model calls with that key are rejected. After a project is archived, model calls made with its inference API keys are also rejected. Before automating either action, confirm which keys, projects, and workloads will be affected.
+> After an inference API key is revoked, the change can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path. Once it takes effect, model calls with that key return `401 incorrect_api_key_error`. After a project is archived, model calls made with its inference API keys are also rejected. Before automating either action, confirm which keys, projects, and workloads will be affected.
 
 > [accordion] When are bills and request details available?
 >
