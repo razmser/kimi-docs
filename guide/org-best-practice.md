@@ -20,8 +20,6 @@ To find your organization ID, open **General** under **Organization** in the con
 
 All projects in an organization share the organization's account balance and rate limits. API usage is tracked separately for each project, so you can monitor and manage spending by project.
 
-API keys come in two versions. New keys are v2 and use the `sk-ms-` prefix, with support for expiration, disable/enable, IP whitelist access policies, and source-IP lookup. v1 keys remain usable but do not support these capabilities and cannot be upgraded in place, so create a v2 key to replace them when needed. Check a key's version in the **Version** column of the **API Keys** list, and see [Manage your organization with the Admin API](org-admin-api.md) for the full capability matrix.
-
 ### Project and API Key Limits
 
 The project and API key limits depend on your organization verification type:
@@ -32,6 +30,41 @@ The project and API key limits depend on your organization verification type:
 | Enterprise Verified | 50 | 100 |
 
 If you need higher limits, fill out the [Contact Sales](https://www.kimi.ai/contact-sales) form.
+
+### Capability differences between API Key v1 and v2
+
+API keys come in two versions. New keys are v2 and use the `sk-ms-` prefix, with support for expiration, disable/enable, IP whitelist access policies, and source-IP lookup. v1 keys remain usable but do not support these capabilities and cannot be upgraded in place, so create a v2 key to replace them when needed. Check a key's version in the **Version** column of the **API Keys** list.
+
+| Version | Lifecycle and management | Security capabilities |
+| - | - | - |
+| v1 | Can remain in use; supports rename and delete | No expiration, disable/enable, or IP whitelist |
+| v2 | New keys use the `sk-ms-` prefix; supports rename, disable, enable, and delete | Expiration configured at creation, IP whitelist, and source-IP lookup |
+
+#### v2 key expiration
+
+* Expiration can be configured only when creating a v2 key. Choose 3 hours, 1 day, 7 days, 30 days, a custom expiration, or never; the creation page previews the expiration time in UTC+8.
+* Expiration cannot be changed or cleared after creation.
+* An expired key becomes invalid permanently and cannot be recovered; create a new key instead.
+* Expiration takes effect at the configured time, with no additional cache window.
+
+#### IP whitelist access policies for v2 keys
+
+By default, a v2 key uses the organization default access policy and can also add one custom policy. The CIDR ranges from both policies take effect as a union. The organization default policy is built in, cannot be deleted, and may be empty. A custom policy can be bound to multiple v2 keys, but a custom policy with associated keys cannot be deleted.
+
+When the effective list is empty, requests are not restricted by source IP, and any IP can call the API. Confirm that this is intended. For configuration permissions, public IPv4 and CIDR requirements, entry limits, and detailed steps, see [Configure IP Whitelist Access Policies](#configure-ip-whitelist-access-policies).
+
+#### Source IP lookup for v2 keys
+
+For v2 keys, open **Source IPs** from the console key list to view source IP addresses and request counts by UTC+8 calendar day. The default view is today; historical dates are available, and future dates cannot be selected.
+
+#### Effective timing and inference call behavior for v2 keys
+
+| Scenario | Inference call behavior or effective timing |
+| - | - |
+| Key disabled, deleted, or expired | HTTP 401, `incorrect_api_key_error` |
+| Source IP not allowed by the whitelist | HTTP 403, `permission_denied_error`, with the message `Your IP is not allowed to access this organization` |
+| Disable, enable, delete, policy rebinding, or whitelist modification | The change can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path |
+| Key expiration | Takes effect at the expiration time, with no additional cache window; irreversible |
 
 ## Example Use Cases
 
@@ -163,13 +196,7 @@ After you clear the list and save, the default policy becomes empty, and v2 keys
 
 When you create a key under **API Keys**, the new key is v2 and uses the organization default access policy by default. You can also add one custom policy, and the CIDR ranges take effect as a union. If the effective CIDR list is empty, the creation dialog warns that requests are not restricted by source IP. Confirm you understand the security risk before proceeding.
 
-For v2 key capabilities such as expiration, disable/enable, and source-IP lookup, see [Manage your organization with the Admin API](org-admin-api.md).
-
-#### Effective Timing and Call Behavior
-
-* Whitelist changes can be delayed by caches: up to about 30 seconds on the console side and up to about 60 seconds across the API call path.
-* When the source IP is not in the effective list, API requests are rejected with HTTP 403 (`permission_denied_error`).
-* If your service is deployed in multiple regions or uses multiple network egress points, add every public egress IP address or CIDR range that needs to access the Kimi API to the policy. This helps prevent disruptions to production requests after saving.
+For the effective timing and call errors associated with v2 key status and whitelist changes, see [Effective timing and inference call behavior for v2 keys](#effective-timing-and-inference-call-behavior-for-v2-keys).
 
 ### View Organization Consumption
 
