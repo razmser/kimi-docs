@@ -268,6 +268,18 @@ components:
           minimum: 0
           nullable: true
           description: Monthly spend limit (milli-cent); null means unlimited.
+        total_consume_limit:
+          type: integer
+          format: uint64
+          minimum: 0
+          nullable: true
+          description: >-
+            Total cumulative consume limit (milli-cent). Accumulates from
+            project creation and never resets; when spending reaches a
+            configured limit greater than 0, subsequent API requests for the
+            project are rejected. Consumption statistics and limit enforcement
+            may be delayed, and charges incurred during the delay must still be
+            paid. Null means unlimited; 0 means unlimited.
         max_token_per_minute:
           type: integer
           format: uint64

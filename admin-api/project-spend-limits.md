@@ -4,7 +4,7 @@
 
 # Get project spend limit
 
-> Project daily/monthly consume limits in milli-cent.
+> Project daily, monthly, and total cumulative consume limits in milli-cent.
 
 > [!NOTE]
 >
@@ -12,9 +12,9 @@
 
 ## Budget semantics
 
-* **Periods**: `daily_consume_limit` accumulates over the Asia/Shanghai calendar day and `monthly_consume_limit` over the Asia/Shanghai calendar month, resetting at each period boundary.
-* **Behavior after reaching the spend limit**: When spending reaches a configured daily or monthly limit greater than 0, subsequent API requests for that project are rejected. Consumption statistics and limit enforcement may be delayed, and charges incurred during the delay must still be paid.
-* **Amount**: integer milli-cent (100,000 units = 1 USD). `null` means no budget configured for that period (unlimited); `0` means a zero budget.
+* **Periods**: `daily_consume_limit` accumulates over the Asia/Shanghai calendar day and `monthly_consume_limit` over the Asia/Shanghai calendar month, resetting at each period boundary. `total_consume_limit` accumulates from project creation and never resets.
+* **Behavior after reaching the spend limit**: When spending reaches a configured daily, monthly, or total limit greater than 0, subsequent API requests for that project are rejected. Consumption statistics and limit enforcement may be delayed, and charges incurred during the delay must still be paid.
+* **Amount**: integer milli-cent (100,000 units = 1 USD). `null` means no corresponding budget configured (unlimited); `0` means unlimited.
 
 
 ## OpenAPI
@@ -246,6 +246,7 @@ components:
       required:
         - daily_consume_limit
         - monthly_consume_limit
+        - total_consume_limit
       additionalProperties: false
       properties:
         daily_consume_limit:
@@ -259,7 +260,7 @@ components:
             budget greater than 0, subsequent API requests for the project are
             rejected. Consumption statistics and limit enforcement may be
             delayed, and charges incurred during the delay must still be paid.
-            Null means not configured (unlimited); 0 means a zero budget.
+            Null means not configured (unlimited); 0 means unlimited.
         monthly_consume_limit:
           type: integer
           format: uint64
@@ -271,7 +272,19 @@ components:
             budget greater than 0, subsequent API requests for the project are
             rejected. Consumption statistics and limit enforcement may be
             delayed, and charges incurred during the delay must still be paid.
-            Null means not configured (unlimited); 0 means a zero budget.
+            Null means not configured (unlimited); 0 means unlimited.
+        total_consume_limit:
+          type: integer
+          format: uint64
+          minimum: 0
+          nullable: true
+          description: >-
+            Total cumulative consume limit (milli-cent). Accumulates from
+            project creation and never resets; when spending reaches a
+            configured limit greater than 0, subsequent API requests for the
+            project are rejected. Consumption statistics and limit enforcement
+            may be delayed, and charges incurred during the delay must still be
+            paid. Null means not configured (unlimited); 0 means unlimited.
     OrgReadErrorResponse:
       type: object
       required:

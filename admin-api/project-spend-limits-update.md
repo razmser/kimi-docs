@@ -10,13 +10,13 @@
 >
 > This endpoint requires an Admin Key with the `org:write` scope, and the key owner must still be an organization admin at call time (otherwise `403 owner_not_admin`).
 >
-> Sending neither field (empty body `{}`) returns `400 invalid_request`; provide at least one field.
+> Sending no fields (empty body `{}`) returns `400 invalid_request`; provide at least one field.
 
 ## Tri-state fields and period rules
 
-* Omitted field: keeps the current value for that period; `null`: clears that period's budget (back to unlimited); a number: sets that period's budget.
-* Daily and monthly periods are configured independently and do not affect each other; the response returns the complete configuration for both periods.
-* Budget semantics match "Get project spend limit": daily resets at Asia/Shanghai day boundaries and monthly at month boundaries. When spending reaches a configured daily or monthly budget greater than 0, subsequent API requests for that project are rejected. Consumption statistics and limit enforcement may be delayed, and charges incurred during the delay must still be paid.
+* Omitted field: keeps the current value for that budget; `null`: clears that budget (back to unlimited); a number: sets that budget.
+* Daily, monthly, and total budgets are configured independently. Reaching any configured budget greater than 0 suspends subsequent API requests for the project, regardless of whether the other budgets have been reached. The response returns the complete budget configuration.
+* Budget semantics match "Get project spend limit": daily resets at Asia/Shanghai day boundaries, monthly at month boundaries, and the total cumulative budget never resets. When spending reaches a configured daily, monthly, or total budget greater than 0, subsequent API requests for that project are rejected. Consumption statistics and limit enforcement may be delayed, and charges incurred during the delay must still be paid.
 
 
 ## OpenAPI
@@ -288,12 +288,23 @@ components:
           description: >-
             Monthly spend limit (milli-cent). Omit to keep the current value,
             `null` to clear the limit (unlimited), or a number to set it.
+        total_consume_limit:
+          type: integer
+          format: uint64
+          minimum: 0
+          maximum: 9223372036854776000
+          nullable: true
+          description: >-
+            Total cumulative consume limit (milli-cent). Omit to keep the
+            current value, `null` to clear the limit (unlimited), or a number to
+            set it. Accumulates from project creation and never resets.
       description: At least one field must be present.
     OrgSpendLimit:
       type: object
       required:
         - daily_consume_limit
         - monthly_consume_limit
+        - total_consume_limit
       additionalProperties: false
       properties:
         daily_consume_limit:
@@ -307,7 +318,7 @@ components:
             budget greater than 0, subsequent API requests for the project are
             rejected. Consumption statistics and limit enforcement may be
             delayed, and charges incurred during the delay must still be paid.
-            Null means not configured (unlimited); 0 means a zero budget.
+            Null means not configured (unlimited); 0 means unlimited.
         monthly_consume_limit:
           type: integer
           format: uint64
@@ -319,7 +330,19 @@ components:
             budget greater than 0, subsequent API requests for the project are
             rejected. Consumption statistics and limit enforcement may be
             delayed, and charges incurred during the delay must still be paid.
-            Null means not configured (unlimited); 0 means a zero budget.
+            Null means not configured (unlimited); 0 means unlimited.
+        total_consume_limit:
+          type: integer
+          format: uint64
+          minimum: 0
+          nullable: true
+          description: >-
+            Total cumulative consume limit (milli-cent). Accumulates from
+            project creation and never resets; when spending reaches a
+            configured limit greater than 0, subsequent API requests for the
+            project are rejected. Consumption statistics and limit enforcement
+            may be delayed, and charges incurred during the delay must still be
+            paid. Null means not configured (unlimited); 0 means unlimited.
     OrgWriteErrorResponse:
       type: object
       required:

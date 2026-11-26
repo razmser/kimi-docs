@@ -8,6 +8,12 @@
 
 This page is updated periodically with Kimi Open Platform product updates and related documentation changes.
 
+**November 2026**
+
+### 🔒 Privacy Policy update
+
+Updated the [Privacy Policy](agreement/userprivacy.md) with revised disclosures on how we collect, use, and share personal information, and the rights and choices available to users.
+
 **October 2026**
 
 ### 📦 Batch API now supports Kimi K3.1 Pro and Kimi K3
